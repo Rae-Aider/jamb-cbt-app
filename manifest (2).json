@@ -1,0 +1,9 @@
+{
+  "name": "DARASIMI JAMB CBT APP 2026",
+  "short_name": "Darasimi CBT",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#EBF5EF",
+  "theme_color": "#EBF5EF",
+  "icons": []
+}

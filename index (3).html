@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>DARASIMI JAMB CBT APP 2026</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  :root {
+    --bg: #EBF5EF;
+    --bg2: #F3FBF6;
+    --card: #ffffff;
+    --card2: #F3FBF6;
+    --accent: #16A34A;
+    --accent2: #0B6B3A;
+    --blue: #0B6B3A;
+    --danger: #ef4444;
+    --text: #1F2937;
+    --muted: #6B7280;
+    --border: #DCEEE3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(circle at 20% 0%, #F3FBF6 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-font-smoothing: antialiased;
+  }
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  .screen { display: none; flex: 1; flex-direction: column; padding: 20px; animation: fadeUp .35s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes popIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+  @keyframes fillBar { from { width: 0; } }
+
+  h1 { font-size: 22px; font-weight: 800; letter-spacing: -.3px; }
+  .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+
+  .offline-badge { font-size: 11px; padding: 5px 10px; border-radius: 20px; background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+  .offline-badge.online { color: var(--accent); border-color: var(--accent); }
+
+  /* ---- Home: mode cards ---- */
+  .mode-grid { display: flex; flex-direction: column; gap: 14px; }
+  .mode-card {
+    background: linear-gradient(135deg, var(--card), var(--card2));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-align: left;
+    color: var(--text);
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .mode-card:active { transform: scale(.97); border-color: var(--accent); }
+  .mode-icon { font-size: 30px; width: 52px; height: 52px; border-radius: 14px; background: rgba(22,163,74,.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mode-card.combo .mode-icon { background: rgba(234,179,8,.15); }
+  .mode-card.progress .mode-icon { background: rgba(11,107,58,.15); }
+  .mode-title { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+  .mode-sub { font-size: 13px; color: var(--muted); }
+  .mode-arrow { margin-left: auto; color: var(--muted); font-size: 18px; }
+
+  .top-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .back-link { color: var(--muted); font-size: 14px; background: none; border: none; padding: 8px 4px 8px 0; }
+
+  /* ---- Subject list (practice mode) ---- */
+  .subject-list { display: flex; flex-direction: column; gap: 10px; }
+  .subject-btn {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; color: var(--text); font-size: 15px; text-align: left;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: transform .12s ease, border-color .12s ease;
+  }
+  .subject-btn:not(:disabled):active { transform: scale(.98); border-color: var(--accent); }
+  .subject-btn .icon { margin-right: 10px; }
+  .subject-btn .count { color: var(--accent); font-size: 12px; font-weight: 700; background: rgba(22,163,74,.12); padding: 4px 8px; border-radius: 8px; }
+  .subject-btn:disabled .count { color: var(--muted); background: rgba(148,163,184,.08); }
+
+  /* ---- Combo select ---- */
+  .locked-chip { background: rgba(22,163,74,.12); border: 1px solid var(--accent); color: var(--accent); border-radius: 10px; padding: 12px 14px; font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .elective-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .elective-chip {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 10px;
+    color: var(--text); font-size: 13.5px; font-weight: 600; text-align: center;
+    transition: all .12s ease;
+  }
+  .elective-chip.selected { border-color: var(--accent2); background: rgba(234,179,8,.12); color: var(--accent2); }
+  .elective-chip:disabled { opacity: .35; }
+  .selection-count { margin: 16px 0; text-align: center; color: var(--muted); font-size: 13px; }
+  .selection-count b { color: var(--text); }
+
+  .start-btn { margin-top: auto; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #ffffff; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 20px -8px rgba(22,163,74,.28); }
+  .start-btn:disabled { background: var(--border); color: var(--muted); box-shadow: none; }
+
+  /* ---- Quiz ---- */
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .subject-badge { font-size: 11px; font-weight: 800; letter-spacing: .5px; color: var(--accent2); background: rgba(234,179,8,.12); padding: 5px 10px; border-radius: 8px; text-transform: uppercase; }
+  .timer { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; font-variant-numeric: tabular-nums; font-weight: 800; font-size: 15px; }
+  .timer.low { color: var(--danger); border-color: var(--danger); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+  .progress-text { color: var(--muted); font-size: 12.5px; margin: 8px 0 6px; }
+  .progress-bar-track { height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .25s ease; }
+
+  .question-text { font-size: 17.5px; line-height: 1.55; margin-bottom: 18px; font-weight: 600; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 12px; padding: 15px;
+    color: var(--text); font-size: 15px; text-align: left; display: flex; gap: 12px; min-height: 52px; align-items: center;
+    transition: all .12s ease;
+  }
+  .option-btn:active { transform: scale(.98); }
+  .option-btn .opt-letter { background: var(--border); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; flex-shrink: 0; }
+  .option-btn.selected { border-color: var(--accent); background: rgba(22,163,74,.1); }
+  .option-btn.selected .opt-letter { background: var(--accent); color: #ffffff; }
+
+  .nav-row { display: flex; gap: 10px; margin-top: 18px; }
+  .nav-btn { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text); font-size: 15px; font-weight: 700; }
+  .nav-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #ffffff; border: none; }
+  .nav-btn:disabled { opacity: .4; }
+
+  .jump-wrap { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .jump-subject-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; margin: 10px 0 6px; }
+  .jump-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  .jump-cell { aspect-ratio: 1; background: var(--card); border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-size: 11.5px; display: flex; align-items: center; justify-content: center; }
+  .jump-cell.answered { background: rgba(22,163,74,.15); border-color: var(--accent); color: var(--accent); }
+  .jump-cell.current { border-color: var(--accent2); color: var(--accent2); box-shadow: 0 0 0 2px rgba(11,107,58,.2); }
+
+  /* ---- Result ---- */
+  .result-ring-wrap { display: flex; justify-content: center; margin: 10px 0 4px; animation: popIn .4s ease; }
+  .result-score { font-size: 52px; font-weight: 900; text-align: center; margin: 4px 0 2px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .result-sub { text-align: center; color: var(--muted); margin-bottom: 20px; font-size: 14px; }
+  .subject-result-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .subject-result-top { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 700; margin-bottom: 8px; }
+  .mini-bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .mini-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); animation: fillBar .6s ease; }
+
+  .review-toggle { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; margin: 16px 0 10px; }
+  .review-item { background: var(--card); border-radius: 10px; padding: 13px; margin-bottom: 9px; border-left: 3px solid var(--border); }
+  .review-item.correct { border-left-color: var(--accent); }
+  .review-item.wrong { border-left-color: var(--danger); }
+  .review-q { font-size: 13.5px; margin-bottom: 7px; }
+  .review-ans { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+  .review-ans .right { color: var(--accent); font-weight: 700; }
+  .review-ans .wrong-ans { color: var(--danger); font-weight: 700; }
+
+  /* ---- Progress screen ---- */
+  .stat-row { display: flex; gap: 10px; margin-bottom: 18px; }
+  .stat-card { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
+  .stat-num { font-size: 22px; font-weight: 900; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .section-label { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 6px 0 10px; }
+  .perf-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .perf-name { font-size: 12.5px; width: 96px; flex-shrink: 0; color: var(--muted); }
+  .perf-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .perf-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--accent)); animation: fillBar .7s ease; }
+  .perf-pct { font-size: 12px; font-weight: 700; width: 34px; text-align: right; }
+  .history-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 13px; margin-bottom: 9px; display: flex; justify-content: space-between; align-items: center; }
+  .history-left .history-title { font-size: 13.5px; font-weight: 700; }
+  .history-left .history-date { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .history-score { font-size: 15px; font-weight: 800; color: var(--accent); }
+  .empty-note { color: var(--muted); font-size: 13.5px; text-align: center; padding: 30px 10px; }
+
+  .logout-link { margin-top: 16px; background: none; border: none; color: var(--muted); font-size: 12.5px; text-decoration: underline; padding: 6px; align-self: center; }
+
+  /* ---- Auth screens ---- */
+  .auth-logo { font-size: 34px; text-align: center; margin-bottom: 4px; }
+  .auth-title { font-size: 21px; font-weight: 800; text-align: center; margin-bottom: 6px; }
+  .auth-sub { font-size: 12.5px; color: var(--muted); text-align: center; margin-bottom: 22px; line-height: 1.5; }
+  .field-label { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; display: block; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .field-group { margin-bottom: 14px; }
+  .field-input, .field-select {
+    width: 100%; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 13px; color: var(--text); font-size: 14.5px; font-family: inherit;
+  }
+  .field-input:focus, .field-select:focus { outline: none; border-color: var(--accent); }
+  .field-select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 32px; }
+  .field-error { color: var(--danger); font-size: 12px; margin: -8px 0 14px; min-height: 14px; }
+  .auth-submit { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #ffffff; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 20px -8px rgba(22,163,74,.28); margin-top: 4px; }
+  .auth-switch { text-align: center; font-size: 13px; color: var(--muted); margin-top: 18px; }
+  .auth-switch a { color: var(--accent); text-decoration: none; font-weight: 700; }
+  .auth-scroll { flex: 1; overflow-y: auto; }
+  .section-tag { font-size: 12px; font-weight: 800; color: var(--accent2); text-transform: uppercase; letter-spacing: .5px; margin: 18px 0 12px; }
+
+  /* ---- Subject picker screen ---- */
+  .subject-picker-btn {
+    width: 100%; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 13px; color: var(--muted); font-size: 14.5px; text-align: left;
+    display: flex; justify-content: space-between; align-items: center; font-family: inherit;
+  }
+  .subject-picker-btn.filled { color: var(--text); font-weight: 600; border-color: var(--accent); }
+  .subject-picker-btn .chevron { color: var(--muted); font-size: 16px; }
+  .picker-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; overflow-y: auto; flex: 1; padding-bottom: 8px; }
+  .picker-item {
+    display: flex; align-items: center; gap: 12px; background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 13px; text-align: left; color: var(--text); font-family: inherit; width: 100%;
+  }
+  .picker-item:not(:disabled):active { transform: scale(.98); border-color: var(--accent); }
+  .picker-icon { font-size: 19px; width: 38px; height: 38px; border-radius: 10px; background: rgba(22,163,74,.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .picker-text { text-align: left; }
+  .picker-name { font-weight: 700; font-size: 14px; }
+  .picker-count { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .picker-item:disabled { opacity: .4; }
+
+  ::-webkit-scrollbar { display: none; }
+
+  /* ---- Dark mode ---- */
+  body[data-theme="dark"] {
+    --bg: #0F1713; --bg2: #13201A; --card: #16221C; --card2: #1B2A22;
+    --border: #243A2E; --text: #EAF3EC; --muted: #93A89C;
+  }
+  body[data-theme="dark"] .field-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2393A89C' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
+
+  /* ---- Bottom tab nav ---- */
+  #app { padding-bottom: 0; }
+  .app-body { flex: 1; display: flex; flex-direction: column; padding-bottom: 72px; }
+  .bottom-nav {
+    margin: 18px -20px -20px; background: var(--card);
+    border-top: 1px solid var(--border); display: flex; justify-content: space-around;
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  }
+  .nav-tab { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); font-size: 10.5px; font-weight: 700; padding: 4px 10px; border-radius: 10px; }
+  .nav-tab .nav-tab-icon { font-size: 19px; }
+  .nav-tab.active { color: var(--accent2); }
+
+  /* ---- Flag / mark for review ---- */
+  .flag-row { display: flex; justify-content: flex-end; margin: -6px 0 10px; }
+  .flag-btn { background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .flag-btn.flagged { color: #B45309; border-color: #F59E0B; background: rgba(245,158,11,.12); }
+  .jump-cell.flagged { border-color: #F59E0B; box-shadow: inset 0 0 0 1px #F59E0B; position: relative; }
+  .jump-cell.flagged::after { content: '🚩'; position: absolute; top: -6px; right: -4px; font-size: 9px; }
+  .grid-legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 4px; font-size: 11px; color: var(--muted); }
+  .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 4px; vertical-align: middle; }
+
+  /* ---- Review grid screen ---- */
+  .review-grid-wrap .jump-grid { grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .review-grid-wrap .jump-cell { font-size: 13px; aspect-ratio: auto; height: 42px; border-radius: 9px; }
+  .submit-confirm-btn { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800; margin-top: 18px; }
+  .continue-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 14px; padding: 14px; font-size: 14.5px; font-weight: 700; margin-top: 10px; }
+
+  /* ---- Score ring ---- */
+  .score-ring-svg { transform: rotate(-90deg); }
+  .score-ring-bg { fill: none; stroke: var(--border); }
+  .score-ring-fg { fill: none; stroke: url(#ringGrad); stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+  .score-ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+  .score-ring-pct { font-size: 30px; font-weight: 900; }
+  .score-ring-label { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+  /* ---- Performance tabs ---- */
+  .perf-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: var(--bg2); border-radius: 12px; padding: 4px; }
+  .perf-tab { flex: 1; background: none; border: none; padding: 9px 4px; font-size: 12.5px; font-weight: 700; color: var(--muted); border-radius: 9px; }
+  .perf-tab.active { background: var(--card); color: var(--accent2); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .weak-item { background: var(--card); border: 1px solid var(--border); border-left: 3px solid #F59E0B; border-radius: 10px; padding: 12px 14px; margin-bottom: 9px; display: flex; justify-content: space-between; align-items: center; }
+  .weak-item .weak-pct { color: #B45309; font-weight: 800; }
+  .trend-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 18px; }
+
+  /* ---- Settings screen ---- */
+  .settings-group { background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 16px; overflow: hidden; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 16px; border-bottom: 1px solid var(--border); gap: 10px; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-label { font-size: 14.5px; font-weight: 600; }
+  .settings-row-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .toggle-switch { position: relative; width: 44px; height: 25px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 20px; transition: .2s; cursor: pointer; }
+  .toggle-slider::before { content: ''; position: absolute; width: 19px; height: 19px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(19px); }
+  .settings-btn { background: none; border: none; color: var(--accent2); font-weight: 700; font-size: 14px; }
+  .settings-btn.danger { color: var(--danger); }
+  .data-stat-row { display: flex; gap: 10px; margin-bottom: 4px; }
+  .backend-note { background: rgba(245,158,11,.1); border: 1px solid #F59E0B; color: #92400E; border-radius: 10px; padding: 12px 14px; font-size: 12.5px; line-height: 1.5; margin-bottom: 16px; }
+  body[data-theme="dark"] .backend-note { color: #FBBF24; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- REGISTER -->
+  <div class="screen active" id="screen-register">
+    <div class="auth-scroll">
+      <div class="auth-logo">📝</div>
+      <div class="auth-title">JOIN DARASIMI JAMB CBT</div>
+      <div class="auth-sub">Set up your profile once — everything after this works fully offline.</div>
+
+      <div class="field-row">
+        <div>
+          <label class="field-label">First name</label>
+          <input class="field-input" id="reg-firstname" placeholder="e.g. Darasimi">
+        </div>
+        <div>
+          <label class="field-label">Surname</label>
+          <input class="field-input" id="reg-surname" placeholder="e.g. Adeyemi">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Phone number</label>
+        <input class="field-input" id="reg-phone" placeholder="e.g. 08012345678">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Email address (optional)</label>
+        <input class="field-input" id="reg-email" type="email" placeholder="you@example.com">
+      </div>
+
+      <div class="section-tag">Subject combination</div>
+      <div class="field-group">
+        <label class="field-label">First subject</label>
+        <input class="field-input" value="English Language" disabled style="opacity:.6">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Second subject</label>
+        <button type="button" class="subject-picker-btn" id="picker-btn-sub2" onclick="openSubjectPicker('sub2')">
+          <span id="picker-label-sub2">Select subject</span><span class="chevron">›</span>
+        </button>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Third subject</label>
+        <button type="button" class="subject-picker-btn" id="picker-btn-sub3" onclick="openSubjectPicker('sub3')">
+          <span id="picker-label-sub3">Select subject</span><span class="chevron">›</span>
+        </button>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Fourth subject</label>
+        <button type="button" class="subject-picker-btn" id="picker-btn-sub4" onclick="openSubjectPicker('sub4')">
+          <span id="picker-label-sub4">Select subject</span><span class="chevron">›</span>
+        </button>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">State</label>
+        <select class="field-select" id="reg-state"></select>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Desired course of study</label>
+        <input class="field-input" id="reg-course" placeholder="e.g. Medicine and Surgery">
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label class="field-label">Password</label>
+          <input class="field-input" id="reg-password" type="password" placeholder="Min. 6 characters">
+        </div>
+        <div>
+          <label class="field-label">Confirm password</label>
+          <input class="field-input" id="reg-password2" type="password" placeholder="Repeat password">
+        </div>
+      </div>
+      <div class="field-error" id="reg-error"></div>
+
+      <button class="auth-submit" onclick="handleRegister()">Register</button>
+      <div class="auth-switch">Already registered? <a href="#" onclick="showLogin();return false;">Login</a></div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="screen" id="screen-login">
+    <div class="auth-logo">📝</div>
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-sub" id="login-sub">Enter your password to continue.</div>
+    <div class="field-group">
+      <label class="field-label">Password</label>
+      <input class="field-input" id="login-password" type="password" placeholder="Your password">
+    </div>
+    <div class="field-error" id="login-error"></div>
+    <button class="auth-submit" onclick="handleLogin()">Login</button>
+    <div class="auth-switch">Not you? <a href="#" onclick="resetProfile();return false;">Register again</a></div>
+  </div>
+
+  <!-- SUBJECT PICKER -->
+  <div class="screen" id="screen-subject-picker">
+    <div class="top-bar"><button class="back-link" onclick="closeSubjectPicker()">&larr; Back</button></div>
+    <h1 id="picker-title">Select Subject</h1>
+    <div class="field-group">
+      <input class="field-input" id="picker-search" placeholder="Search subjects..." oninput="renderPickerList()">
+    </div>
+    <div class="picker-list" id="picker-list"></div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <div class="brand-row">
+      <h1 id="home-greeting">DARASIMI JAMB CBT</h1>
+      <span class="offline-badge" id="net-badge">offline ready</span>
+    </div>
+    <p class="subtitle" id="home-subtitle">Choose how you want to practice today</p>
+    <div class="mode-grid">
+      <button class="mode-card" onclick="goToPractice()">
+        <span class="mode-icon">📘</span>
+        <div><div class="mode-title">Practice a Subject</div><div class="mode-sub">Untimed pace, one subject at a time</div></div>
+        <span class="mode-arrow">›</span>
+      </button>
+      <button class="mode-card combo" onclick="goToComboSelect()">
+        <span class="mode-icon">🎯</span>
+        <div><div class="mode-title">Full JAMB Exam</div><div class="mode-sub">English + 3 electives, real exam format</div></div>
+        <span class="mode-arrow">›</span>
+      </button>
+      <button class="mode-card progress" onclick="goToProgress()">
+        <span class="mode-icon">📊</span>
+        <div><div class="mode-title">My Progress</div><div class="mode-sub">See scores and improvement over time</div></div>
+        <span class="mode-arrow">›</span>
+      </button>
+    </div>
+    <div style="margin-top:auto"></div>
+    <nav class="bottom-nav">
+      <button class="nav-tab" data-tab="home" onclick="goHome()"><span class="nav-tab-icon">🏠</span>Home</button>
+      <button class="nav-tab" data-tab="practice" onclick="goToPractice()"><span class="nav-tab-icon">📘</span>Practice</button>
+      <button class="nav-tab" data-tab="progress" onclick="goToProgress()"><span class="nav-tab-icon">📊</span>Results</button>
+      <button class="nav-tab" data-tab="settings" onclick="goToSettings()"><span class="nav-tab-icon">⚙️</span>More</button>
+    </nav>
+  </div>
+
+  <!-- PRACTICE: subject select -->
+  <div class="screen" id="screen-subjects">
+    <div class="top-bar"><button class="back-link" onclick="goHome()">&larr; Back</button></div>
+    <h1>Pick a Subject</h1>
+    <p class="subtitle">Practice at your own pace</p>
+    <div class="subject-list" id="subject-list"></div>
+    <div style="margin-top:auto"></div>
+    <nav class="bottom-nav">
+      <button class="nav-tab" data-tab="home" onclick="goHome()"><span class="nav-tab-icon">🏠</span>Home</button>
+      <button class="nav-tab" data-tab="practice" onclick="goToPractice()"><span class="nav-tab-icon">📘</span>Practice</button>
+      <button class="nav-tab" data-tab="progress" onclick="goToProgress()"><span class="nav-tab-icon">📊</span>Results</button>
+      <button class="nav-tab" data-tab="settings" onclick="goToSettings()"><span class="nav-tab-icon">⚙️</span>More</button>
+    </nav>
+  </div>
+
+  <!-- COMBO: elective select -->
+  <div class="screen" id="screen-combo-select">
+    <div class="top-bar"><button class="back-link" onclick="goHome()">&larr; Back</button></div>
+    <h1>Build Your Combination</h1>
+    <p class="subtitle">English is compulsory. Pick 3 electives.</p>
+    <div class="locked-chip">✅ English Language — included automatically</div>
+    <div class="elective-grid" id="elective-grid"></div>
+    <div class="selection-count" id="selection-count">0/3 electives selected</div>
+    <button class="start-btn" id="combo-start-btn" disabled onclick="startCombo()">Start Full Exam</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <button class="back-link" onclick="confirmExit()">&larr; Exit</button>
+      <span class="timer" id="timer">10:00</span>
+    </div>
+    <span class="subject-badge" id="subject-badge">ENGLISH</span>
+    <div class="progress-text" id="progress-text">Question 1 of 20</div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    <div class="flag-row">
+      <button class="flag-btn" id="flag-btn" onclick="toggleFlag()"><span>🚩</span><span id="flag-btn-text">Mark for review</span></button>
+    </div>
+    <div class="question-text" id="question-text"></div>
+    <div class="options" id="options"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prev-btn" onclick="prevQuestion()">Previous</button>
+      <button class="nav-btn primary" id="next-btn" onclick="nextQuestion()">Next</button>
+    </div>
+    <div class="jump-wrap" id="jump-wrap"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result">
+    <h1 style="text-align:center">Exam Submitted</h1>
+    <div class="result-ring-wrap">
+      <div style="position:relative;width:170px;height:170px">
+        <svg class="score-ring-svg" width="170" height="170" viewBox="0 0 170 170">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="var(--accent)"/>
+              <stop offset="100%" stop-color="var(--accent2)"/>
+            </linearGradient>
+          </defs>
+          <circle class="score-ring-bg" cx="85" cy="85" r="74" stroke-width="14"/>
+          <circle class="score-ring-fg" id="score-ring-fg" cx="85" cy="85" r="74" stroke-width="14"/>
+        </svg>
+        <div class="score-ring-center">
+          <div class="score-ring-pct" id="score-ring-pct">0%</div>
+          <div class="score-ring-label">SCORE</div>
+        </div>
+      </div>
+    </div>
+    <div class="result-score" id="result-score">0/0</div>
+    <div class="result-sub" id="result-sub"></div>
+    <div id="subject-breakdown"></div>
+    <button class="review-toggle" onclick="toggleReview()">Show full review ▾</button>
+    <div id="review-list" style="display:none"></div>
+    <button class="start-btn" onclick="goHome()" style="margin-top:16px">Back to Home</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="screen" id="screen-progress">
+    <div class="top-bar"><button class="back-link" onclick="goHome()">&larr; Back</button></div>
+    <h1>Performance Dashboard</h1>
+    <p class="subtitle">Track how you're improving</p>
+    <div class="perf-tabs" id="perf-tabs">
+      <button class="perf-tab active" data-perf-tab="overview" onclick="setPerfTab('overview')">Overview</button>
+      <button class="perf-tab" data-perf-tab="subject" onclick="setPerfTab('subject')">Subject-wise</button>
+      <button class="perf-tab" data-perf-tab="weak" onclick="setPerfTab('weak')">Weak Topics</button>
+    </div>
+    <div id="progress-content"></div>
+    <div style="margin-top:auto"></div>
+    <nav class="bottom-nav">
+      <button class="nav-tab" data-tab="home" onclick="goHome()"><span class="nav-tab-icon">🏠</span>Home</button>
+      <button class="nav-tab" data-tab="practice" onclick="goToPractice()"><span class="nav-tab-icon">📘</span>Practice</button>
+      <button class="nav-tab" data-tab="progress" onclick="goToProgress()"><span class="nav-tab-icon">📊</span>Results</button>
+      <button class="nav-tab" data-tab="settings" onclick="goToSettings()"><span class="nav-tab-icon">⚙️</span>More</button>
+    </nav>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="screen-settings">
+    <div class="top-bar"><button class="back-link" onclick="goHome()">&larr; Back</button></div>
+    <h1>Settings</h1>
+    <p class="subtitle" id="settings-profile-line">Manage your app preferences</p>
+
+    <div class="settings-group">
+      <div class="settings-row">
+        <div><div class="settings-row-label">Dark Mode</div><div class="settings-row-sub">Easier on the eyes at night</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="toggle-dark" onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Notifications</div><div class="settings-row-sub">Local reminders to practice (device only)</div></div>
+        <label class="toggle-switch"><input type="checkbox" id="toggle-notif" onchange="toggleNotif(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Language</div><div class="settings-row-sub">English only for now</div></div>
+        <select class="field-select" style="width:auto;padding:8px 28px 8px 12px" disabled><option>English</option></select>
+      </div>
+    </div>
+
+    <div class="section-label">Question bank</div>
+    <div class="settings-group">
+      <div class="settings-row">
+        <div><div class="settings-row-label">Download Question Bank</div><div class="settings-row-sub" id="qbank-status">All questions cached for offline use ✓</div></div>
+        <button class="settings-btn" onclick="recacheQuestionBank()">Refresh</button>
+      </div>
+    </div>
+
+    <div class="section-label">Data &amp; backend</div>
+    <div class="backend-note">This app runs fully on this device — there is no remote server or company database. "Backend access" here means your own local data: your profile and every score you've recorded, stored privately in this browser.</div>
+    <div class="settings-group">
+      <div class="settings-row">
+        <div><div class="settings-row-label">Sync Results</div><div class="settings-row-sub">No internet account connected — export/import instead</div></div>
+        <button class="settings-btn" onclick="exportData()">Export</button>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Import Data</div><div class="settings-row-sub">Restore from a previously exported file</div></div>
+        <button class="settings-btn" onclick="$('import-file-input').click()">Import</button>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Clear All Data</div><div class="settings-row-sub">Erases profile and history on this device</div></div>
+        <button class="settings-btn danger" onclick="clearAllData()">Clear</button>
+      </div>
+    </div>
+    <input type="file" id="import-file-input" accept="application/json" style="display:none" onchange="importData(event)">
+
+    <button class="logout-link" onclick="logout()">Log out</button>
+    <div style="margin-top:auto"></div>
+    <nav class="bottom-nav">
+      <button class="nav-tab" data-tab="home" onclick="goHome()"><span class="nav-tab-icon">🏠</span>Home</button>
+      <button class="nav-tab" data-tab="practice" onclick="goToPractice()"><span class="nav-tab-icon">📘</span>Practice</button>
+      <button class="nav-tab" data-tab="progress" onclick="goToProgress()"><span class="nav-tab-icon">📊</span>Results</button>
+      <button class="nav-tab" data-tab="settings" onclick="goToSettings()"><span class="nav-tab-icon">⚙️</span>More</button>
+    </nav>
+  </div>
+
+  <!-- REVIEW & FLAGGED GRID (shown before final submit) -->
+  <div class="screen" id="screen-reviewgrid">
+    <div class="top-bar"><button class="back-link" onclick="backToQuizFromReview()">&larr; Back to question</button></div>
+    <h1>Review Your Answers</h1>
+    <p class="subtitle">Check flagged and unanswered questions before submitting</p>
+    <div class="grid-legend">
+      <span><span class="legend-dot" style="background:rgba(22,163,74,.6)"></span>Answered</span>
+      <span><span class="legend-dot" style="background:var(--border)"></span>Not answered</span>
+      <span><span class="legend-dot" style="background:#F59E0B"></span>Flagged</span>
+    </div>
+    <div class="review-grid-wrap" id="reviewgrid-wrap" style="overflow-y:auto;flex:1"></div>
+    <button class="submit-confirm-btn" onclick="finishQuiz()">Submit Exam</button>
+    <button class="continue-btn" onclick="backToQuizFromReview()">Continue Answering</button>
+  </div>
+
+</div>
+
+<script>
+/* ================= QUESTION BANK ================= */
+const QUESTION_BANK = {
+  "English Language": [
+    { q: "Choose the option that best completes the sentence: She is ___ honest woman.", options: ["a", "an", "the", "no article needed"], answer: 1 },
+    { q: "Select the correctly spelled word.", options: ["Occassion", "Occasion", "Ocasion", "Occassiion"], answer: 1 },
+    { q: "The synonym of 'benevolent' is:", options: ["Cruel", "Kind", "Selfish", "Angry"], answer: 1 },
+    { q: "Identify the part of speech of the underlined word: She sings BEAUTIFULLY.", options: ["Noun", "Adjective", "Adverb", "Verb"], answer: 2 },
+    { q: "Choose the antonym of 'ancient'.", options: ["Old", "Modern", "Historic", "Aged"], answer: 1 },
+    { q: "Choose the option that best completes the gap: Neither the teacher nor the students ___ happy with the result.", options: ["was", "were", "is", "have been"], answer: 1 },
+    { q: "The correct past tense of 'lie' (to recline) is:", options: ["lied", "lay", "lain", "layed"], answer: 1 },
+    { q: "Choose the word that is closest in meaning to 'meticulous'.", options: ["careless", "careful", "quick", "lazy"], answer: 1 },
+    { q: "Select the option that correctly completes the idiom: He decided to ___ the bullet and tell the truth.", options: ["bite", "catch", "dodge", "shoot"], answer: 0 },
+    { q: "Identify the error in: 'Each of the students have submitted their assignment.'", options: ["Each", "have", "their", "assignment"], answer: 1 },
+    { q: "The figure of speech in 'The whole stadium roared' is:", options: ["simile", "metonymy", "synecdoche", "personification"], answer: 2 },
+    { q: "Choose the correct preposition: She is good ___ mathematics.", options: ["in", "at", "on", "for"], answer: 1 },
+    { q: "Select the option nearest in meaning to 'procrastinate'.", options: ["hurry", "delay", "finish", "plan"], answer: 1 },
+    { q: "Which word is a homophone of 'their'?", options: ["there", "then", "them", "that"], answer: 0 },
+    { q: "Choose the correctly punctuated sentence.", options: ["Its a beautiful day.", "It's a beautiful day.", "Its' a beautiful day.", "It is' a beautiful day."], answer: 1 }
+  ],
+  "Mathematics": [
+    { q: "Simplify: 3(2x - 4) = 18. Find x.", options: ["5", "10", "6", "8"], answer: 0 },
+    { q: "What is the value of 7² - 4²?", options: ["33", "49", "16", "13"], answer: 0 },
+    { q: "Find the next number: 2, 6, 12, 20, ___", options: ["28", "30", "26", "24"], answer: 1 },
+    { q: "A car travels 180km in 3 hours. What is its speed?", options: ["50km/h", "60km/h", "45km/h", "70km/h"], answer: 1 },
+    { q: "Solve: 2x + 5 = 15", options: ["x = 4", "x = 5", "x = 6", "x = 10"], answer: 1 },
+    { q: "Find the value of x if 5x - 3 = 2x + 12.", options: ["3", "4", "5", "6"], answer: 2 },
+    { q: "Express 0.375 as a fraction in its lowest terms.", options: ["3/8", "3/5", "5/8", "1/3"], answer: 0 },
+    { q: "If the ratio of boys to girls in a class is 3:2 and there are 30 students, how many are girls?", options: ["10", "12", "18", "15"], answer: 1 },
+    { q: "Find the area of a circle with radius 7cm. (Take π = 22/7)", options: ["154 cm²", "44 cm²", "22 cm²", "88 cm²"], answer: 0 },
+    { q: "Simplify: (3/4) ÷ (1/2)", options: ["3/2", "1/2", "3/8", "2/3"], answer: 0 },
+    { q: "What is the sum of the interior angles of a pentagon?", options: ["360°", "540°", "450°", "720°"], answer: 1 },
+    { q: "If y = 3x² and x = 2, find y.", options: ["6", "12", "18", "9"], answer: 1 },
+    { q: "Find the mean of the numbers 4, 8, 6, 10, 12.", options: ["7", "8", "9", "10"], answer: 1 },
+    { q: "A number is increased by 20% to give 60. What is the original number?", options: ["48", "50", "45", "40"], answer: 1 },
+    { q: "Solve for x: x² - 5x + 6 = 0", options: ["x = 2 or 3", "x = 1 or 6", "x = -2 or -3", "x = 2 or -3"], answer: 0 }
+  ],
+  "Physics": [
+    { q: "The SI unit of force is the", options: ["joule", "newton", "watt", "pascal"], answer: 1 },
+    { q: "The acceleration due to gravity near the earth's surface is approximately", options: ["8.9 m/s²", "9.8 m/s²", "10.8 m/s²", "7.8 m/s²"], answer: 1 },
+    { q: "Which of the following is a vector quantity?", options: ["Speed", "Mass", "Velocity", "Energy"], answer: 2 },
+    { q: "The process by which heat travels through a vacuum is called", options: ["conduction", "convection", "radiation", "insulation"], answer: 2 },
+    { q: "Ohm's law states that the current through a conductor is", options: ["inversely proportional to resistance at constant voltage", "directly proportional to voltage at constant resistance", "independent of voltage", "directly proportional to resistance at constant voltage"], answer: 1 },
+    { q: "The image formed by a plane mirror is", options: ["real and inverted", "virtual and upright", "real and upright", "virtual and inverted"], answer: 1 },
+    { q: "Which of the following is NOT one of Newton's laws of motion?", options: ["Law of inertia", "Law of acceleration", "Law of action and reaction", "Law of conservation of mass"], answer: 3 },
+    { q: "The unit used to measure electric current is the", options: ["volt", "ohm", "ampere", "watt"], answer: 2 },
+    { q: "Sound cannot travel through", options: ["air", "water", "vacuum", "steel"], answer: 2 },
+    { q: "The energy possessed by a body due to its motion is called", options: ["potential energy", "kinetic energy", "chemical energy", "thermal energy"], answer: 1 },
+    { q: "A transformer works on the principle of", options: ["electromagnetic induction", "electrostatic repulsion", "thermal expansion", "nuclear fission"], answer: 0 },
+    { q: "The bending of light as it passes from one medium to another is called", options: ["reflection", "refraction", "diffraction", "dispersion"], answer: 1 }
+  ],
+  "Chemistry": [
+    { q: "The number of protons in the nucleus of an atom is called its", options: ["mass number", "atomic number", "atomic mass", "isotope number"], answer: 1 },
+    { q: "Which of the following is an example of a physical change?", options: ["Rusting of iron", "Burning of wood", "Melting of ice", "Souring of milk"], answer: 2 },
+    { q: "The pH of a neutral solution at room temperature is", options: ["0", "7", "14", "1"], answer: 1 },
+    { q: "Which gas is produced when a reactive metal reacts with a dilute acid?", options: ["Oxygen", "Hydrogen", "Nitrogen", "Carbon (IV) oxide"], answer: 1 },
+    { q: "The process by which a solid changes directly to a gas without passing through the liquid state is called", options: ["evaporation", "sublimation", "condensation", "deposition"], answer: 1 },
+    { q: "Which of the following is NOT a noble gas?", options: ["Helium", "Neon", "Chlorine", "Argon"], answer: 2 },
+    { q: "The chemical bond formed by the transfer of electrons from one atom to another is called a(n)", options: ["covalent bond", "ionic bond", "metallic bond", "hydrogen bond"], answer: 1 },
+    { q: "Which of the following is used to test for the presence of carbon (IV) oxide gas?", options: ["Litmus paper", "Lime water", "Universal indicator", "Starch solution"], answer: 1 },
+    { q: "Which of these is a property of an alkali metal?", options: ["High melting point", "Low reactivity", "Soft and highly reactive", "Non-conductor of electricity"], answer: 2 },
+    { q: "The catalyst used in the Haber process for manufacturing ammonia is", options: ["platinum", "finely divided iron", "vanadium (V) oxide", "manganese (IV) oxide"], answer: 1 },
+    { q: "Which of the following best describes an exothermic reaction?", options: ["A reaction that absorbs heat from the surroundings", "A reaction that releases heat to the surroundings", "A reaction that requires a catalyst", "A reaction that occurs only at high temperature"], answer: 1 },
+    { q: "The number of moles of a substance is calculated by dividing its mass by its", options: ["density", "molar mass", "volume", "concentration"], answer: 1 }
+  ],
+  "Biology": [
+    { q: "The basic structural and functional unit of life is the", options: ["tissue", "cell", "organ", "organelle"], answer: 1 },
+    { q: "Photosynthesis mainly takes place in the", options: ["mitochondria", "chloroplast", "nucleus", "ribosome"], answer: 1 },
+    { q: "Which of the following is a function of the liver?", options: ["Pumping blood round the body", "Detoxification of harmful substances", "Producing sound", "Filtering inhaled air"], answer: 1 },
+    { q: "The process by which plants lose water vapour through their leaves is called", options: ["respiration", "transpiration", "photosynthesis", "osmosis"], answer: 1 },
+    { q: "Which blood group is known as the universal donor?", options: ["A", "B", "AB", "O"], answer: 3 },
+    { q: "The cell organelle mainly responsible for protein synthesis is the", options: ["ribosome", "Golgi body", "lysosome", "vacuole"], answer: 0 },
+    { q: "Which of these is an example of asexual reproduction?", options: ["Fertilization", "Budding", "Pollination", "Mating"], answer: 1 },
+    { q: "The exchange of gases in the human lungs occurs mainly in the", options: ["bronchi", "trachea", "alveoli", "larynx"], answer: 2 },
+    { q: "Which of the following best describes an ecosystem?", options: ["A group of the same species living together", "All living and non-living things interacting in an environment", "A single habitat only", "A chain of predators and prey"], answer: 1 },
+    { q: "Enzymes are best described as", options: ["inorganic catalysts", "biological catalysts made of protein", "hormones", "vitamins"], answer: 1 },
+    { q: "The part of a flower that develops into a fruit after fertilization is the", options: ["petal", "sepal", "ovary", "stamen"], answer: 2 },
+    { q: "Which of these diseases is caused by a bacterium?", options: ["Malaria", "Tuberculosis", "Measles", "Ringworm"], answer: 1 }
+  ],
+  "Agricultural Science": [
+    { q: "The branch of agriculture concerned with the rearing of animals is called", options: ["agronomy", "animal husbandry", "horticulture", "forestry"], answer: 1 },
+    { q: "Which of the following is a primary tillage implement?", options: ["Harrow", "Plough", "Planter", "Cultivator"], answer: 1 },
+    { q: "The process of adding organic matter to improve soil fertility is called", options: ["irrigation", "manuring", "drainage", "liming"], answer: 1 },
+    { q: "Which of these is a leguminous crop?", options: ["Maize", "Rice", "Cowpea", "Millet"], answer: 2 },
+    { q: "The loss of water from plant surfaces through tiny pores is called", options: ["respiration", "transpiration", "photosynthesis", "germination"], answer: 1 },
+    { q: "Which soil type has the best water-holding capacity?", options: ["Sandy soil", "Clay soil", "Loamy soil", "Gravel soil"], answer: 2 },
+    { q: "The practice of growing different crops in succession on the same land is called", options: ["mixed cropping", "crop rotation", "monocropping", "intercropping"], answer: 1 },
+    { q: "Which of the following is a method of controlling soil erosion?", options: ["Deforestation", "Terracing", "Overgrazing", "Bush burning"], answer: 1 },
+    { q: "The male reproductive part of a flower is called the", options: ["pistil", "stamen", "sepal", "ovary"], answer: 1 },
+    { q: "Which of these pests commonly attacks stored grains?", options: ["Weevil", "Tsetse fly", "Mosquito", "Aphid"], answer: 0 },
+    { q: "Castration in livestock is mainly carried out to", options: ["increase fertility", "control unwanted breeding and improve meat quality", "prevent disease", "increase milk yield"], answer: 1 },
+    { q: "The chemical substance used to kill weeds is called a(n)", options: ["insecticide", "herbicide", "fungicide", "nematicide"], answer: 1 }
+  ],
+  "Economics": [
+    { q: "The study of how individuals and society choose to use scarce resources to satisfy unlimited wants is called", options: ["accounting", "economics", "commerce", "sociology"], answer: 1 },
+    { q: "The basic economic problem faced by every society is that of", options: ["inflation", "scarcity", "unemployment", "taxation"], answer: 1 },
+    { q: "The curve that shows the relationship between the price of a good and the quantity demanded is the", options: ["supply curve", "demand curve", "indifference curve", "production possibility curve"], answer: 1 },
+    { q: "When the price of a good falls and the quantity demanded rises, this illustrates the", options: ["law of supply", "law of demand", "law of diminishing returns", "law of variable proportions"], answer: 1 },
+    { q: "A market situation with only one seller controlling the entire supply of a good is called", options: ["perfect competition", "oligopoly", "monopoly", "duopoly"], answer: 2 },
+    { q: "The total value of goods and services produced within a country in a given year is called", options: ["Gross National Product", "Gross Domestic Product", "Net National Income", "per capita income"], answer: 1 },
+    { q: "Which of the following is a factor of production?", options: ["Money", "Land", "Profit", "Interest"], answer: 1 },
+    { q: "A persistent rise in the general price level of goods and services in an economy is called", options: ["deflation", "inflation", "recession", "depreciation"], answer: 1 },
+    { q: "A tax whose burden cannot be shifted to another person is called a", options: ["indirect tax", "direct tax", "value added tax", "excise duty"], answer: 1 },
+    { q: "Opportunity cost is best described as", options: ["the total cost of production", "the value of the next best alternative forgone", "the price paid for a good", "the cost of borrowing money"], answer: 1 },
+    { q: "A situation where the demand for a good rises as consumer income rises is a feature of", options: ["inferior goods", "normal goods", "giffen goods", "substitute goods"], answer: 1 },
+    { q: "The central bank's tool of controlling money supply by buying or selling government securities is called", options: ["bank rate policy", "open market operation", "moral suasion", "selective credit control"], answer: 1 }
+  ],
+  "Commerce": [
+    { q: "Commerce may be defined as all those activities concerned with the", options: ["manufacturing of goods only", "buying, selling and distribution of goods and services", "extraction of raw materials only", "provision of banking services only"], answer: 1 },
+    { q: "Industries that combine raw materials into a finished product are known as", options: ["extractive industries", "constructive industries", "manufacturing industries", "service industries"], answer: 2 },
+    { q: "A business owned and controlled by one person who bears all the risk and takes all the profit is a", options: ["partnership", "sole proprietorship", "cooperative society", "joint stock company"], answer: 1 },
+    { q: "Which of the following is a disadvantage of a sole proprietorship?", options: ["Quick decision making", "Unlimited liability", "Full control by the owner", "Retention of all profits"], answer: 1 },
+    { q: "A document showing the details of goods sold, quantity, price and total amount owed by the buyer is called", options: ["a receipt", "an invoice", "a statement of account", "a quotation"], answer: 1 },
+    { q: "The wholesaler mainly performs the function of", options: ["manufacturing goods", "buying in bulk and selling in smaller quantities to retailers", "transporting goods across borders", "advertising goods to consumers"], answer: 1 },
+    { q: "Which of the following is an aid to trade?", options: ["Farming", "Mining", "Insurance", "Fishing"], answer: 2 },
+    { q: "A reduction in price allowed to a buyer who pays within an agreed period is called", options: ["trade discount", "cash discount", "quantity discount", "seasonal discount"], answer: 1 },
+    { q: "The type of insurance policy that covers the life of a person is called", options: ["fire insurance", "marine insurance", "life assurance", "fidelity guarantee insurance"], answer: 2 },
+    { q: "A market where shares of companies are bought and sold is called the", options: ["money market", "stock exchange", "commodity market", "foreign exchange market"], answer: 1 },
+    { q: "The document sent by a seller to a buyer to correct an undercharge on a previous invoice is called", options: ["a credit note", "a debit note", "a receipt", "a statement of account"], answer: 1 },
+    { q: "Which of the following best describes a contract?", options: ["Any conversation between two people", "An agreement enforceable by law", "A verbal promise only", "A document signed by a lawyer"], answer: 1 },
+    { q: "The elements of the marketing mix are commonly summarised as the four", options: ["C's", "P's", "M's", "A's"], answer: 1 },
+    { q: "A person who acts on behalf of another in business transactions, for an agreed commission, is called", options: ["a wholesaler", "an agent", "a retailer", "a manufacturer"], answer: 1 },
+    { q: "The central bank's role of lending to commercial banks in times of need makes it the", options: ["government's banker only", "lender of last resort", "issuer of currency only", "banker to foreign banks"], answer: 1 }
+  ],
+  "Accounting": [
+    { q: "The accounting concept that requires revenue to be recognized when earned and expenses when incurred, not when cash changes hands, is the", options: ["cash concept", "accrual concept", "going concern concept", "prudence concept"], answer: 1 },
+    { q: "The main aim of preparing a trial balance is to", options: ["show the financial position of a business", "check the arithmetical accuracy of the ledger", "calculate profit for the year", "record daily transactions"], answer: 1 },
+    { q: "Which of these is a book of original entry?", options: ["Trial balance", "Cash book", "Trading account", "Balance sheet"], answer: 1 },
+    { q: "Opening stock N5,000, purchases N20,000, closing stock N4,000. What is the cost of goods sold?", options: ["N19,000", "N21,000", "N29,000", "N9,000"], answer: 1 },
+    { q: "The double entry principle states that for every debit entry there must be a corresponding", options: ["entry in the same account", "credit entry of equal value", "entry in the cash book", "balance carried down"], answer: 1 },
+    { q: "A reduction in the value of a fixed asset due to wear and tear is called", options: ["appreciation", "depreciation", "amortization", "revaluation"], answer: 1 },
+    { q: "The book used to record transactions that do not fit into any other subsidiary book, such as correction of errors, is the", options: ["cash book", "journal proper", "purchases day book", "sales ledger"], answer: 1 },
+    { q: "Which of the following is a current asset?", options: ["Motor vehicle", "Goodwill", "Stock", "Building"], answer: 2 },
+    { q: "The excess of income over expenditure in a non-profit making organization is called", options: ["profit", "surplus", "dividend", "capital"], answer: 1 },
+    { q: "A firm's capital is calculated as", options: ["Assets + Liabilities", "Assets − Liabilities", "Liabilities − Assets", "Assets × Liabilities"], answer: 1 },
+    { q: "Which of the following best describes goodwill?", options: ["A tangible fixed asset", "The value of a business's reputation above its net assets", "A current liability", "A type of stock"], answer: 1 },
+    { q: "In partnership accounts, the account used to record salaries and interest on capital before profit sharing is the", options: ["capital account", "current account", "appropriation account", "drawings account"], answer: 2 },
+    { q: "The depreciation method that charges a fixed percentage on the reducing balance each year is called", options: ["straight line method", "reducing balance method", "revaluation method", "sum of digits method"], answer: 1 },
+    { q: "A cheque entered in the cash book but not yet appearing on the bank statement is called a(n)", options: ["dishonoured cheque", "unpresented cheque", "uncredited cheque", "stale cheque"], answer: 1 },
+    { q: "The financial statement that shows the assets, liabilities and capital of a business at a particular date is the", options: ["trading account", "profit and loss account", "balance sheet", "cash flow statement"], answer: 2 }
+  ],
+  "Government": [
+    { q: "A system of government in which power is shared between a central authority and component states is called", options: ["unitary government", "federal government", "confederal government", "monarchy"], answer: 1 },
+    { q: "The doctrine of separation of powers was propounded by", options: ["John Locke", "Montesquieu", "Jean-Jacques Rousseau", "Thomas Hobbes"], answer: 1 },
+    { q: "Which of the following is a feature of democracy?", options: ["Rule by one person", "Hereditary succession", "Rule of law and periodic elections", "Absence of political parties"], answer: 2 },
+    { q: "The right of a citizen to vote in an election is known as", options: ["suffrage", "franchise", "both suffrage and franchise", "plebiscite"], answer: 2 },
+    { q: "A country's fundamental law that establishes the structure of government is called its", options: ["bye-law", "constitution", "statute", "treaty"], answer: 1 },
+    { q: "Which arm of government is primarily responsible for making laws?", options: ["Executive", "Legislature", "Judiciary", "Civil service"], answer: 1 },
+    { q: "A government formed by a coalition of more than one political party is called a", options: ["one-party government", "coalition government", "military government", "interim government"], answer: 1 },
+    { q: "Which of the following is NOT a function of the judiciary?", options: ["Interpreting the law", "Settling disputes", "Making laws", "Protecting citizens' rights"], answer: 2 },
+    { q: "The principle that no one, including government officials, is above the law is called", options: ["rule of law", "fundamental human rights", "federalism", "bicameralism"], answer: 0 },
+    { q: "A legislature made up of two chambers is described as", options: ["unicameral", "bicameral", "tricameral", "plural"], answer: 1 },
+    { q: "Which of the following best describes a pressure group?", options: ["A political party seeking to win elections", "An organized group that seeks to influence government policy without contesting elections", "A branch of government", "An electoral commission"], answer: 1 },
+    { q: "In Nigeria, the fundamental human rights of citizens are contained in the", options: ["Electoral Act", "1999 Constitution (as amended)", "Land Use Act", "Companies Act"], answer: 1 }
+  ],
+  "History": [
+    { q: "The transatlantic slave trade primarily transported enslaved Africans to", options: ["Asia", "the Americas", "Europe", "Australia"], answer: 1 },
+    { q: "The Berlin Conference of 1884-85 was convened mainly to", options: ["end the slave trade", "partition Africa among European powers", "grant Africa independence", "establish the United Nations"], answer: 1 },
+    { q: "Which of the following was a major pre-colonial West African empire?", options: ["Songhai", "Zulu", "Great Zimbabwe", "Aksum"], answer: 0 },
+    { q: "The system of government in which a colonial power ruled indirectly through traditional rulers is called", options: ["direct rule", "indirect rule", "assimilation", "paternalism"], answer: 1 },
+    { q: "Nigeria gained independence from British colonial rule in the year", options: ["1957", "1960", "1963", "1966"], answer: 1 },
+    { q: "The Amalgamation of the Northern and Southern Protectorates of Nigeria took place in", options: ["1900", "1914", "1922", "1930"], answer: 1 },
+    { q: "Which of the following best describes the Atlantic Charter?", options: ["A trade agreement between African states", "A declaration of postwar goals by the Allied powers in World War II", "A treaty ending the slave trade", "A constitution for colonial Nigeria"], answer: 1 },
+    { q: "The first military coup in Nigeria took place in the year", options: ["1960", "1966", "1970", "1975"], answer: 1 },
+    { q: "Pan-Africanism as a movement was primarily concerned with", options: ["trade between Africa and Europe", "unity and solidarity among people of African descent", "religious conversion in Africa", "colonial administration"], answer: 1 },
+    { q: "The Nigerian Civil War lasted from", options: ["1960 to 1963", "1966 to 1970", "1967 to 1970", "1970 to 1975"], answer: 2 },
+    { q: "Which European country colonized Nigeria?", options: ["France", "Portugal", "Britain", "Germany"], answer: 2 },
+    { q: "The 'Scramble for Africa' refers to", options: ["African resistance movements", "the rapid colonization of Africa by European powers in the late 19th century", "the independence movements of the 1960s", "trade disputes among African kingdoms"], answer: 1 }
+  ],
+  "Geography": [
+    { q: "The imaginary line that divides the earth into the Northern and Southern Hemispheres is the", options: ["Prime Meridian", "Equator", "Tropic of Cancer", "International Date Line"], answer: 1 },
+    { q: "Which of the following is an agent of erosion?", options: ["Photosynthesis", "Wind", "Fertilization", "Respiration"], answer: 1 },
+    { q: "The layer of the atmosphere closest to the earth's surface is the", options: ["stratosphere", "troposphere", "mesosphere", "thermosphere"], answer: 1 },
+    { q: "A map that shows the relief of an area using contour lines is called a", options: ["political map", "topographic map", "climate map", "population map"], answer: 1 },
+    { q: "The process by which water changes from a gas to a liquid in the water cycle is called", options: ["evaporation", "condensation", "precipitation", "infiltration"], answer: 1 },
+    { q: "Which of the following best describes an oxbow lake?", options: ["A lake formed by a volcanic crater", "A crescent-shaped lake formed when a river changes course", "A lake formed by glacial melting", "An artificial reservoir"], answer: 1 },
+    { q: "The Sahara Desert is located in which part of Africa?", options: ["Southern Africa", "Northern Africa", "Central Africa", "Eastern Africa"], answer: 1 },
+    { q: "Which of these is a renewable source of energy?", options: ["Coal", "Natural gas", "Solar power", "Crude oil"], answer: 2 },
+    { q: "The movement of people from rural to urban areas is called", options: ["emigration", "urbanization", "rural-urban migration", "transhumance"], answer: 2 },
+    { q: "Rainfall formed when warm moist air rises over mountains and cools is called", options: ["convectional rainfall", "orographic rainfall", "cyclonic rainfall", "frontal rainfall"], answer: 1 },
+    { q: "The instrument used to measure atmospheric pressure is the", options: ["thermometer", "barometer", "hygrometer", "anemometer"], answer: 1 },
+    { q: "Which of the following is a man-made feature on a map?", options: ["River", "Mountain", "Road", "Forest"], answer: 2 }
+  ],
+  "Literature in English": [
+    { q: "A figure of speech that compares two unlike things using 'like' or 'as' is called a", options: ["metaphor", "simile", "personification", "hyperbole"], answer: 1 },
+    { q: "A long narrative poem that tells the story of a hero's deeds is called", options: ["a sonnet", "an epic", "an elegy", "an ode"], answer: 1 },
+    { q: "The repetition of consonant sounds at the beginning of words in a line of poetry is called", options: ["rhyme", "assonance", "alliteration", "onomatopoeia"], answer: 2 },
+    { q: "A play in which the main character suffers a downfall due to a flaw in character or fate is called a", options: ["comedy", "tragedy", "farce", "melodrama"], answer: 1 },
+    { q: "The turning point in a plot, after which the action moves toward resolution, is called the", options: ["exposition", "climax", "denouement", "prologue"], answer: 1 },
+    { q: "A statement that appears self-contradictory but reveals a deeper truth is called a", options: ["paradox", "pun", "irony", "cliché"], answer: 0 },
+    { q: "When a writer gives human qualities to non-human things or ideas, this is called", options: ["simile", "personification", "metaphor", "symbolism"], answer: 1 },
+    { q: "The central idea or message of a literary work is called its", options: ["plot", "theme", "setting", "tone"], answer: 1 },
+    { q: "A brief, witty statement often used to conclude a poem or speech is called a(n)", options: ["epigram", "elegy", "eulogy", "prologue"], answer: 0 },
+    { q: "The use of words whose sound imitates the sound they describe is called", options: ["alliteration", "onomatopoeia", "assonance", "rhyme"], answer: 1 },
+    { q: "A poem of mourning or lament for the dead is called a(n)", options: ["ode", "sonnet", "elegy", "ballad"], answer: 2 },
+    { q: "The person who tells the story in a novel or play is called the", options: ["protagonist", "narrator", "antagonist", "chorus"], answer: 1 }
+  ],
+  "Christian Religious Studies": [
+    { q: "The first book of the Old Testament is the Book of", options: ["Exodus", "Genesis", "Leviticus", "Numbers"], answer: 1 },
+    { q: "Moses led the Israelites out of slavery in", options: ["Babylon", "Egypt", "Assyria", "Persia"], answer: 1 },
+    { q: "The Ten Commandments were given to Moses on Mount", options: ["Sinai", "Carmel", "Zion", "Olives"], answer: 0 },
+    { q: "According to the Bible, Jesus Christ was born in the town of", options: ["Nazareth", "Bethlehem", "Jerusalem", "Capernaum"], answer: 1 },
+    { q: "The book that records the account of the early church after Jesus' ascension is the", options: ["Gospel of John", "Acts of the Apostles", "Book of Revelation", "Epistle to the Romans"], answer: 1 },
+    { q: "Who was swallowed by a great fish for disobeying God's instruction to preach in Nineveh?", options: ["Elijah", "Jonah", "Jeremiah", "Isaiah"], answer: 1 },
+    { q: "According to the Bible, the first man created by God was", options: ["Abraham", "Adam", "Noah", "Cain"], answer: 1 },
+    { q: "The fruit of the Spirit listed in Galatians includes all of the following EXCEPT", options: ["love", "patience", "pride", "self-control"], answer: 2 },
+    { q: "The last book of the New Testament is the", options: ["Gospel of John", "Acts of the Apostles", "Book of Revelation", "Epistle of Jude"], answer: 2 },
+    { q: "Which prophet anointed David as king of Israel?", options: ["Elijah", "Samuel", "Nathan", "Isaiah"], answer: 1 },
+    { q: "The Christian festival that celebrates the resurrection of Jesus Christ is called", options: ["Christmas", "Easter", "Pentecost", "Epiphany"], answer: 1 },
+    { q: "The parable of the Good Samaritan primarily teaches about", options: ["wealth and greed", "love for one's neighbour", "forgiveness of sin", "the kingdom of heaven"], answer: 1 }
+  ],
+  "Islamic Religious Studies": [
+    { q: "The Holy Book of Islam is called the", options: ["Torah", "Qur'an", "Bible", "Hadith"], answer: 1 },
+    { q: "The Prophet of Islam, Muhammad, was born in the city of", options: ["Medina", "Mecca", "Jerusalem", "Damascus"], answer: 1 },
+    { q: "The five daily prayers in Islam are collectively called", options: ["Zakat", "Salat", "Sawm", "Hajj"], answer: 1 },
+    { q: "The pilgrimage to Mecca that every able Muslim must perform at least once is called", options: ["Umrah", "Hajj", "Jihad", "Sadaqah"], answer: 1 },
+    { q: "The month in which Muslims observe fasting is called", options: ["Shawwal", "Ramadan", "Muharram", "Rajab"], answer: 1 },
+    { q: "The declaration of faith in Islam is called the", options: ["Shahada", "Zakat", "Salat", "Sawm"], answer: 0 },
+    { q: "The night in which the Qur'an was first revealed to Prophet Muhammad is called", options: ["Laylat al-Qadr", "Isra and Mi'raj", "Eid al-Fitr", "Ashura"], answer: 0 },
+    { q: "Zakat in Islam refers to", options: ["fasting", "obligatory almsgiving to the poor", "the pilgrimage to Mecca", "the daily prayers"], answer: 1 },
+    { q: "The first set of revelations the Prophet Muhammad received were through the Angel", options: ["Mika'il", "Jibril", "Israfil", "Azra'il"], answer: 1 },
+    { q: "Which of the following is one of the Pillars of Islam?", options: ["Belief in reincarnation", "Fasting during Ramadan", "Worship of ancestors", "Baptism"], answer: 1 },
+    { q: "The migration of the Prophet Muhammad from Mecca to Medina is called the", options: ["Hijrah", "Hajj", "Isra", "Sunnah"], answer: 0 },
+    { q: "The collection of the sayings and actions of Prophet Muhammad is called the", options: ["Qur'an", "Hadith", "Sunnah only", "Fiqh"], answer: 1 }
+  ],
+  "Civic Education": [
+    { q: "Civic education is primarily concerned with", options: ["military training", "the rights and responsibilities of citizens", "business management", "agricultural practices"], answer: 1 },
+    { q: "Which of the following is a civic responsibility of a citizen?", options: ["Evading tax", "Obeying the law", "Avoiding elections", "Disrespecting public property"], answer: 1 },
+    { q: "The right to life, liberty and freedom of expression are examples of", options: ["civic duties", "fundamental human rights", "government policies", "electoral rules"], answer: 1 },
+    { q: "Corruption in public office is best described as", options: ["efficient service delivery", "the abuse of entrusted power for private gain", "a form of taxation", "a civic right"], answer: 1 },
+    { q: "Which of the following best promotes national integration?", options: ["Ethnic discrimination", "Religious intolerance", "Unity in diversity", "Ethnic favouritism"], answer: 2 },
+    { q: "The right to vote and be voted for is known as", options: ["civil right only", "political right", "economic right", "social right"], answer: 1 },
+    { q: "Which of these is an example of a pressure group in civic life?", options: ["A political party contesting elections", "A trade union advocating for workers' rights", "The electoral commission", "The judiciary"], answer: 1 },
+    { q: "Good governance is characterized by", options: ["secrecy and nepotism", "transparency and accountability", "favouritism", "dictatorship"], answer: 1 },
+    { q: "Which of the following best describes civic responsibility?", options: ["Obligations citizens owe to their community and state", "Privileges given to government officials only", "Rights given exclusively to adults over 60", "Duties of foreign nationals"], answer: 0 },
+    { q: "Drug trafficking and abuse are examples of", options: ["civic virtues", "social vices", "constitutional rights", "economic policies"], answer: 1 },
+    { q: "The practice of showing respect for the rule of law and constituted authority is called", options: ["civic duty and discipline", "nepotism", "anarchy", "corruption"], answer: 0 },
+    { q: "Human trafficking is best described as", options: ["a legal form of labour migration", "the illegal recruitment and exploitation of persons for profit", "a government welfare programme", "a civic right"], answer: 1 }
+  ],
+  "Insurance": [
+    { q: "Insurance may be defined as a system of", options: ["gambling on uncertain events", "transferring risk from an individual to a group for a premium", "guaranteed profit-making", "tax collection"], answer: 1 },
+    { q: "The document that contains the terms of an insurance contract is called the", options: ["invoice", "policy", "receipt", "certificate of incorporation"], answer: 1 },
+    { q: "The amount paid periodically by the insured to the insurer is called the", options: ["premium", "indemnity", "commission", "dividend"], answer: 0 },
+    { q: "The principle of insurance which ensures that the insured does not profit beyond their actual loss is called", options: ["utmost good faith", "indemnity", "subrogation", "contribution"], answer: 1 },
+    { q: "Which of the following is a type of life insurance policy?", options: ["Fire insurance", "Whole life policy", "Marine insurance", "Fidelity guarantee insurance"], answer: 1 },
+    { q: "The principle requiring both parties to an insurance contract to disclose all material facts is called", options: ["indemnity", "utmost good faith", "subrogation", "insurable interest"], answer: 1 },
+    { q: "Insurance that covers goods in transit by sea is called", options: ["fire insurance", "marine insurance", "life assurance", "motor insurance"], answer: 1 },
+    { q: "The right of an insurer, after paying a claim, to take over the insured's right to recover from a third party is called", options: ["indemnity", "subrogation", "contribution", "assignment"], answer: 1 },
+    { q: "Which of the following best describes 'insurable interest'?", options: ["Any interest a person has in insurance companies' shares", "A financial interest a person has in the subject matter of insurance such that loss would cause them hardship", "The commission paid to an insurance agent", "A government tax on insurance policies"], answer: 1 },
+    { q: "Reinsurance refers to", options: ["an insured person taking a second policy", "an insurance company insuring part of its risk with another insurer", "renewing an expired policy", "cancelling an insurance policy"], answer: 1 },
+    { q: "The person who benefits from a life insurance policy upon the death of the insured is called the", options: ["underwriter", "beneficiary", "broker", "actuary"], answer: 1 },
+    { q: "The professional who assesses and calculates insurance risks and premiums is called a(n)", options: ["broker", "actuary", "agent", "surveyor"], answer: 1 }
+  ],
+  "Fine Arts": [
+    { q: "The art of creating three-dimensional forms by carving, modelling or casting is called", options: ["painting", "sculpture", "printmaking", "drawing"], answer: 1 },
+    { q: "Primary colours in art are", options: ["red, green, blue", "red, yellow, blue", "orange, green, purple", "black, white, grey"], answer: 1 },
+    { q: "The arrangement of visual elements in a work of art to create a sense of balance is called", options: ["texture", "composition", "perspective", "contrast"], answer: 1 },
+    { q: "A picture created by applying paint to a surface is called a", options: ["sculpture", "painting", "collage", "mosaic"], answer: 1 },
+    { q: "The technique of creating an illusion of depth on a flat surface is called", options: ["symmetry", "perspective", "abstraction", "pattern"], answer: 1 },
+    { q: "Which of the following is a traditional Nigerian art form known for bronze casting?", options: ["Nok art", "Benin art", "Ife art", "Yoruba art"], answer: 1 },
+    { q: "The art of beautiful, decorative handwriting is called", options: ["typography", "calligraphy", "lithography", "etching"], answer: 1 },
+    { q: "Colours like blue and green, which give a feeling of calmness, are called", options: ["warm colours", "cool colours", "neutral colours", "complementary colours"], answer: 1 },
+    { q: "The process of printing images from a carved or etched surface is called", options: ["printmaking", "sculpture", "ceramics", "weaving"], answer: 0 },
+    { q: "Pottery is primarily associated with which material?", options: ["Wood", "Clay", "Metal", "Fabric"], answer: 1 }
+  ],
+  "Music": [
+    { q: "The speed at which a piece of music is played is called its", options: ["dynamics", "tempo", "timbre", "texture"], answer: 1 },
+    { q: "A group of musical notes sounded together in harmony is called a", options: ["scale", "chord", "rhythm", "melody"], answer: 1 },
+    { q: "The symbol used to indicate silence in music is called a", options: ["clef", "rest", "sharp", "flat"], answer: 1 },
+    { q: "Which of the following is a traditional Nigerian musical instrument?", options: ["Violin", "Talking drum", "Piano", "Trumpet"], answer: 1 },
+    { q: "The quality that distinguishes the sound of one instrument from another is called", options: ["pitch", "timbre", "tempo", "dynamics"], answer: 1 },
+    { q: "A song sung by one person without instrumental accompaniment is called", options: ["a duet", "an a cappella solo", "a chorus", "an orchestra"], answer: 1 },
+    { q: "The lines and spaces on which musical notes are written is called the", options: ["staff", "clef", "bar", "tempo"], answer: 0 },
+    { q: "Highlife music is a popular musical genre that originated in", options: ["South Africa", "West Africa", "East Africa", "North Africa"], answer: 1 },
+    { q: "The gradual increase in loudness in a piece of music is called", options: ["diminuendo", "crescendo", "staccato", "legato"], answer: 1 },
+    { q: "A combination of three or more musical notes played together is called a", options: ["chord", "note", "rest", "clef"], answer: 0 }
+  ],
+  "French": [
+    { q: "The French word for 'hello' is", options: ["Au revoir", "Bonjour", "Merci", "S'il vous plaît"], answer: 1 },
+    { q: "What is the English meaning of 'merci'?", options: ["Please", "Sorry", "Thank you", "Goodbye"], answer: 2 },
+    { q: "Choose the correct French translation of 'I am a student'.", options: ["Je suis étudiant", "Tu es étudiant", "Il est étudiant", "Nous sommes étudiants"], answer: 0 },
+    { q: "The French word 'maison' means", options: ["car", "house", "school", "book"], answer: 1 },
+    { q: "Which of the following is the correct French word for 'book'?", options: ["Livre", "Table", "Porte", "Fenêtre"], answer: 0 },
+    { q: "Choose the correct plural form of 'le chat' (the cat).", options: ["les chat", "les chats", "le chats", "la chats"], answer: 1 },
+    { q: "The French numbers 'un, deux, trois' correspond to", options: ["1, 2, 3", "4, 5, 6", "7, 8, 9", "10, 11, 12"], answer: 0 },
+    { q: "'Comment allez-vous?' is used to ask", options: ["What is your name?", "How are you?", "Where do you live?", "What time is it?"], answer: 1 },
+    { q: "The French word for 'water' is", options: ["Eau", "Pain", "Lait", "Vin"], answer: 0 },
+    { q: "Choose the correct French word for 'school'.", options: ["L'école", "La maison", "Le travail", "Le marché"], answer: 0 }
+  ],
+  "Arabic": [
+    { q: "The Arabic word 'kitab' means", options: ["pen", "book", "door", "water"], answer: 1 },
+    { q: "The Arabic greeting 'As-salamu alaykum' means", options: ["Goodbye", "Peace be upon you", "Thank you", "Good morning"], answer: 1 },
+    { q: "The Arabic script is written and read from", options: ["left to right", "right to left", "top to bottom", "bottom to top"], answer: 1 },
+    { q: "The Arabic word for 'teacher' is", options: ["Tilmidh", "Mu'allim", "Bayt", "Kalb"], answer: 1 },
+    { q: "'Shukran' in Arabic means", options: ["Please", "Sorry", "Thank you", "Welcome"], answer: 2 },
+    { q: "The Arabic word 'bayt' means", options: ["house", "school", "market", "mosque"], answer: 0 },
+    { q: "Which of the following is the Arabic word for 'water'?", options: ["Ma'", "Khubz", "Qalam", "Bab"], answer: 0 },
+    { q: "The Arabic number 'thalatha' means", options: ["one", "two", "three", "four"], answer: 2 },
+    { q: "The Arabic word for 'mosque' is", options: ["Masjid", "Madrasah", "Souq", "Nahr"], answer: 0 },
+    { q: "'Na'am' in Arabic is used to mean", options: ["No", "Yes", "Maybe", "Never"], answer: 1 }
+  ],
+  "Hausa": [
+    { q: "The Hausa word 'ruwa' means", options: ["fire", "water", "food", "house"], answer: 1 },
+    { q: "'Sannu' in Hausa is used to say", options: ["Goodbye", "Hello/Greetings", "Thank you", "Sorry"], answer: 1 },
+    { q: "The Hausa word for 'house' is", options: ["Gida", "Mota", "Littafi", "Makaranta"], answer: 0 },
+    { q: "'Na gode' in Hausa means", options: ["Please", "Sorry", "Thank you", "Welcome"], answer: 2 },
+    { q: "The Hausa word for 'school' is", options: ["Makaranta", "Kasuwa", "Gona", "Kogi"], answer: 0 },
+    { q: "Choose the correct Hausa word for 'book'.", options: ["Littafi", "Mota", "Gida", "Ruwa"], answer: 0 },
+    { q: "The Hausa greeting used in the morning is", options: ["Ina kwana", "Barka da safiya", "Sai anjima", "Ina yini"], answer: 1 },
+    { q: "The Hausa word 'yaro' refers to a", options: ["girl", "boy", "woman", "man"], answer: 1 },
+    { q: "'Ina kwana' in Hausa is a greeting that means", options: ["Good afternoon", "Good evening", "How was your night?", "Goodbye"], answer: 2 },
+    { q: "The Hausa word for 'market' is", options: ["Kasuwa", "Gida", "Makaranta", "Gona"], answer: 0 }
+  ],
+  "Igbo": [
+    { q: "The Igbo word 'mmiri' means", options: ["fire", "water", "food", "house"], answer: 1 },
+    { q: "'Ndewo' in Igbo is used to say", options: ["Goodbye", "Hello/Greetings", "Thank you", "Sorry"], answer: 1 },
+    { q: "The Igbo word for 'house' is", options: ["Ụlọ", "Ụgbọ ala", "Akwụkwọ", "Ụlọ akwụkwọ"], answer: 0 },
+    { q: "'Daalụ' in Igbo means", options: ["Please", "Sorry", "Thank you", "Welcome"], answer: 2 },
+    { q: "The Igbo word for 'school' is", options: ["Ụlọ akwụkwọ", "Ahịa", "Ugbo", "Osimiri"], answer: 0 },
+    { q: "Choose the correct Igbo word for 'book'.", options: ["Akwụkwọ", "Ụgbọ ala", "Ụlọ", "Mmiri"], answer: 0 },
+    { q: "The Igbo word 'nwa' refers to a", options: ["child", "adult", "elder", "stranger"], answer: 0 },
+    { q: "'Kedu' in Igbo is used to ask", options: ["What is your name?", "How are you?", "Where are you going?", "What time is it?"], answer: 1 },
+    { q: "The Igbo word for 'market' is", options: ["Ahịa", "Ụlọ", "Akwụkwọ", "Osimiri"], answer: 0 },
+    { q: "The Igbo word for 'food' is", options: ["Nri", "Mmiri", "Ụlọ", "Ugbo"], answer: 0 }
+  ],
+  "Yoruba": [
+    { q: "The Yoruba word 'omi' means", options: ["fire", "water", "food", "house"], answer: 1 },
+    { q: "'Ẹ nlẹ́' in Yoruba is used to say", options: ["Goodbye", "Hello/Greetings", "Thank you", "Sorry"], answer: 1 },
+    { q: "The Yoruba word for 'house' is", options: ["Ilé", "Ọkọ̀", "Ìwé", "Ilé-ìwé"], answer: 0 },
+    { q: "'Ẹ ṣé' in Yoruba means", options: ["Please", "Sorry", "Thank you", "Welcome"], answer: 2 },
+    { q: "The Yoruba word for 'school' is", options: ["Ilé-ìwé", "Ọjà", "Oko", "Odò"], answer: 0 },
+    { q: "Choose the correct Yoruba word for 'book'.", options: ["Ìwé", "Ọkọ̀", "Ilé", "Omi"], answer: 0 },
+    { q: "The Yoruba word 'ọmọ' refers to a", options: ["child", "adult", "elder", "stranger"], answer: 0 },
+    { q: "'Báwo ni' in Yoruba is used to ask", options: ["What is your name?", "How are you?", "Where are you going?", "What time is it?"], answer: 1 },
+    { q: "The Yoruba word for 'market' is", options: ["Ọjà", "Ilé", "Ìwé", "Odò"], answer: 0 },
+    { q: "The Yoruba word for 'food' is", options: ["Oúnjẹ", "Omi", "Ilé", "Oko"], answer: 0 }
+  ]
+};
+const SUBJECT_ICONS = { "English Language":"📖","Mathematics":"➗","Physics":"⚛️","Chemistry":"🧪","Biology":"🧬","Agricultural Science":"🌾","Economics":"💰","Commerce":"🏪","Accounting":"📒","Government":"🏛️","History":"📜","Geography":"🌍","Literature in English":"📚","Christian Religious Studies":"✝️","Islamic Religious Studies":"☪️","Civic Education":"⚖️","Insurance":"🛡️","Fine Arts":"🎨","Music":"🎵","French":"🇫🇷","Arabic":"📜","Hausa":"🗣️","Igbo":"🗣️","Yoruba":"🗣️" };
+const COMPULSORY = "English Language";
+const SECONDS_PER_Q_PRACTICE = 60;
+const JAMB_TOTAL_SECONDS = 2 * 3600 + 10 * 60; // real JAMB combined timing: 2h10m
+const PROFILE_KEY = 'darasimi_jamb_profile';
+const NG_STATES = ["Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno","Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu","FCT Abuja","Gombe","Imo","Jigawa","Kaduna","Kano","Katsina","Kebbi","Kogi","Kwara","Lagos","Nasarawa","Niger","Ogun","Ondo","Osun","Oyo","Plateau","Rivers","Sokoto","Taraba","Yobe","Zamfara"];
+
+/* ================= STATE ================= */
+let state = {
+  mode: 'practice',            // 'practice' | 'combo'
+  subject: null,               // used in practice mode
+  comboSubjects: [],           // used in combo mode, e.g. [English, Physics, Chemistry, Biology]
+  questions: [],                // flattened, each item: {subject, q, options, answer}
+  sectionBounds: [],            // [{subject, start, end}] indices into questions, for combo mode
+  answers: [],
+  flags: [],
+  current: 0,
+  timeLeft: 0,
+  timerId: null
+};
+let pickerTarget = null;
+let perfTab = 'overview';
+const slotSelections = { sub2: '', sub3: '', sub4: '' };
+const $ = id => document.getElementById(id);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  updateBottomNav(id);
+}
+function updateBottomNav(id) {
+  const map = { 'screen-home': 'home', 'screen-subjects': 'practice', 'screen-progress': 'progress', 'screen-settings': 'settings' };
+  const tab = map[id] || null;
+  document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.toggle('active', tab && btn.dataset.tab === tab));
+}
+function goHome() { clearInterval(state.timerId); showScreen('screen-home'); }
+function goToPractice() { renderSubjectList(); showScreen('screen-subjects'); }
+function goToComboSelect() { selectedElectives = []; renderElectiveGrid(); showScreen('screen-combo-select'); }
+function goToProgress() { renderProgressScreen(); showScreen('screen-progress'); }
+function goToSettings() {
+  const profile = loadProfile();
+  if (profile) $('settings-profile-line').textContent = `${profile.firstname} ${profile.surname} · ${profile.subjects.join(', ')}`;
+  showScreen('screen-settings');
+}
+
+/* ================= PRACTICE MODE ================= */
+function renderSubjectList() {
+  const list = $('subject-list');
+  list.innerHTML = '';
+  const subjects = Object.keys(QUESTION_BANK).sort((a, b) => (QUESTION_BANK[b].length > 0) - (QUESTION_BANK[a].length > 0));
+  subjects.forEach(subject => {
+    const n = QUESTION_BANK[subject].length;
+    const btn = document.createElement('button');
+    btn.className = 'subject-btn';
+    const icon = SUBJECT_ICONS[subject] || '📄';
+    if (n === 0) {
+      btn.disabled = true;
+      btn.innerHTML = `<span><span class="icon">${icon}</span>${subject}</span><span class="count">soon</span>`;
+    } else {
+      btn.innerHTML = `<span><span class="icon">${icon}</span>${subject}</span><span class="count">${n} qs</span>`;
+      btn.onclick = () => startPractice(subject);
+    }
+    list.appendChild(btn);
+  });
+}
+
+function startPractice(subject) {
+  state.mode = 'practice';
+  state.subject = subject;
+  state.comboSubjects = [subject];
+  const qs = QUESTION_BANK[subject].map(q => ({ subject, ...q }));
+  state.questions = qs;
+  state.sectionBounds = [{ subject, start: 0, end: qs.length - 1 }];
+  state.answers = new Array(qs.length).fill(null);
+  state.flags = new Array(qs.length).fill(false);
+  state.current = 0;
+  state.timeLeft = qs.length * SECONDS_PER_Q_PRACTICE;
+  saveProgress();
+  showScreen('screen-quiz');
+  renderQuestion();
+  startTimer();
+}
+
+/* ================= COMBO MODE ================= */
+let selectedElectives = [];
+
+function renderElectiveGrid() {
+  const grid = $('elective-grid');
+  grid.innerHTML = '';
+  const electives = Object.keys(QUESTION_BANK).filter(s => s !== COMPULSORY)
+    .sort((a, b) => (QUESTION_BANK[b].length > 0) - (QUESTION_BANK[a].length > 0));
+  electives.forEach(subject => {
+    const n = QUESTION_BANK[subject].length;
+    const btn = document.createElement('button');
+    btn.className = 'elective-chip';
+    btn.textContent = (SUBJECT_ICONS[subject] || '') + ' ' + subject;
+    if (n === 0) {
+      btn.disabled = true;
+    } else {
+      btn.onclick = () => toggleElective(subject, btn);
+    }
+    grid.appendChild(btn);
+  });
+  updateComboUI();
+}
+
+function toggleElective(subject, btn) {
+  const idx = selectedElectives.indexOf(subject);
+  if (idx > -1) {
+    selectedElectives.splice(idx, 1);
+    btn.classList.remove('selected');
+  } else {
+    if (selectedElectives.length >= 3) return;
+    selectedElectives.push(subject);
+    btn.classList.add('selected');
+  }
+  updateComboUI();
+}
+
+function updateComboUI() {
+  $('selection-count').innerHTML = `<b>${selectedElectives.length}/3</b> electives selected`;
+  $('combo-start-btn').disabled = selectedElectives.length !== 3;
+}
+
+function startCombo() {
+  if (selectedElectives.length !== 3) return;
+  state.mode = 'combo';
+  state.comboSubjects = [COMPULSORY, ...selectedElectives];
+  state.questions = [];
+  state.sectionBounds = [];
+  state.comboSubjects.forEach(subject => {
+    const start = state.questions.length;
+    QUESTION_BANK[subject].forEach(q => state.questions.push({ subject, ...q }));
+    const end = state.questions.length - 1;
+    state.sectionBounds.push({ subject, start, end });
+  });
+  state.answers = new Array(state.questions.length).fill(null);
+  state.flags = new Array(state.questions.length).fill(false);
+  state.current = 0;
+  state.timeLeft = JAMB_TOTAL_SECONDS;
+  saveProgress();
+  showScreen('screen-quiz');
+  renderQuestion();
+  startTimer();
+}
+
+/* ================= TIMER ================= */
+function startTimer() {
+  clearInterval(state.timerId);
+  state.timerId = setInterval(() => {
+    state.timeLeft--;
+    updateTimerDisplay();
+    if (state.timeLeft <= 0) { clearInterval(state.timerId); finishQuiz(); }
+    if (state.timeLeft % 5 === 0) saveProgress();
+  }, 1000);
+  updateTimerDisplay();
+}
+function updateTimerDisplay() {
+  const h = Math.floor(state.timeLeft / 3600);
+  const m = Math.floor((state.timeLeft % 3600) / 60);
+  const s = state.timeLeft % 60;
+  const el = $('timer');
+  el.textContent = h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m}:${s.toString().padStart(2,'0')}`;
+  el.classList.toggle('low', state.timeLeft <= 60);
+}
+
+/* ================= QUESTION RENDER ================= */
+function currentSubjectFor(idx) {
+  return state.sectionBounds.find(b => idx >= b.start && idx <= b.end)?.subject || state.subject;
+}
+
+function renderQuestion() {
+  const q = state.questions[state.current];
+  const subj = currentSubjectFor(state.current);
+  $('subject-badge').textContent = subj.toUpperCase();
+  $('progress-text').textContent = `Question ${state.current + 1} of ${state.questions.length}`;
+  $('progress-fill').style.width = `${((state.current+1)/state.questions.length)*100}%`;
+  $('question-text').textContent = q.q;
+
+  const optionsEl = $('options');
+  optionsEl.innerHTML = '';
+  const letters = ['A','B','C','D','E'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (state.answers[state.current] === i ? ' selected' : '');
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    optionsEl.appendChild(btn);
+  });
+
+  $('prev-btn').disabled = state.current === 0;
+  $('next-btn').textContent = state.current === state.questions.length - 1 ? 'Review & Submit' : 'Next';
+  const flagBtn = $('flag-btn');
+  const flagged = !!state.flags[state.current];
+  flagBtn.classList.toggle('flagged', flagged);
+  $('flag-btn-text').textContent = flagged ? 'Marked for review' : 'Mark for review';
+  renderJumpGrid();
+}
+
+function toggleFlag() { state.flags[state.current] = !state.flags[state.current]; saveProgress(); renderQuestion(); }
+function selectAnswer(i) { state.answers[state.current] = i; saveProgress(); renderQuestion(); }
+function nextQuestion() { if (state.current === state.questions.length - 1) goToReviewGrid(); else { state.current++; renderQuestion(); } }
+function prevQuestion() { if (state.current > 0) { state.current--; renderQuestion(); } }
+
+function renderJumpGrid() {
+  const wrap = $('jump-wrap');
+  wrap.innerHTML = '';
+  state.sectionBounds.forEach(section => {
+    if (state.sectionBounds.length > 1) {
+      const label = document.createElement('div');
+      label.className = 'jump-subject-label';
+      label.textContent = section.subject;
+      wrap.appendChild(label);
+    }
+    const grid = document.createElement('div');
+    grid.className = 'jump-grid';
+    for (let i = section.start; i <= section.end; i++) {
+      const cell = document.createElement('button');
+      cell.className = 'jump-cell' + (state.answers[i] !== null ? ' answered' : '') + (i === state.current ? ' current' : '') + (state.flags[i] ? ' flagged' : '');
+      cell.textContent = (i - section.start) + 1;
+      cell.onclick = () => { state.current = i; renderQuestion(); };
+      grid.appendChild(cell);
+    }
+    wrap.appendChild(grid);
+  });
+}
+
+function confirmExit() {
+  if (confirm('Exit this session? Your progress will be lost.')) {
+    clearInterval(state.timerId);
+    clearProgress();
+    goHome();
+  }
+}
+
+/* ================= REVIEW & FLAGGED GRID ================= */
+function goToReviewGrid() {
+  renderReviewGrid();
+  showScreen('screen-reviewgrid');
+}
+function backToQuizFromReview() {
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+function renderReviewGrid() {
+  const wrap = $('reviewgrid-wrap');
+  wrap.innerHTML = '';
+  const answered = state.answers.filter(a => a !== null).length;
+  const flagged = state.flags.filter(Boolean).length;
+  const summary = document.createElement('p');
+  summary.className = 'subtitle';
+  summary.style.marginBottom = '14px';
+  summary.textContent = `${answered}/${state.questions.length} answered · ${flagged} flagged for review`;
+  wrap.appendChild(summary);
+  state.sectionBounds.forEach(section => {
+    if (state.sectionBounds.length > 1) {
+      const label = document.createElement('div');
+      label.className = 'jump-subject-label';
+      label.textContent = section.subject;
+      wrap.appendChild(label);
+    }
+    const grid = document.createElement('div');
+    grid.className = 'jump-grid';
+    for (let i = section.start; i <= section.end; i++) {
+      const cell = document.createElement('button');
+      cell.className = 'jump-cell' + (state.answers[i] !== null ? ' answered' : '') + (state.flags[i] ? ' flagged' : '');
+      cell.textContent = (i - section.start) + 1;
+      cell.onclick = () => { state.current = i; showScreen('screen-quiz'); renderQuestion(); };
+      grid.appendChild(cell);
+    }
+    wrap.appendChild(grid);
+  });
+}
+
+/* ================= RESULT ================= */
+function finishQuiz() {
+  clearInterval(state.timerId);
+  let totalCorrect = 0;
+  const perSubject = state.sectionBounds.map(b => {
+    let correct = 0;
+    for (let i = b.start; i <= b.end; i++) {
+      if (state.answers[i] === state.questions[i].answer) correct++;
+    }
+    totalCorrect += correct;
+    return { subject: b.subject, correct, total: b.end - b.start + 1 };
+  });
+  const totalQs = state.questions.length;
+  const overallPct = Math.round((totalCorrect / totalQs) * 100);
+
+  const circumference = 2 * Math.PI * 74;
+  const ringFg = $('score-ring-fg');
+  ringFg.style.strokeDasharray = `${circumference}`;
+  ringFg.style.strokeDashoffset = `${circumference}`;
+  $('score-ring-pct').textContent = '0%';
+  requestAnimationFrame(() => {
+    ringFg.style.strokeDashoffset = `${circumference - (overallPct / 100) * circumference}`;
+  });
+  let animPct = 0;
+  clearInterval(window._ringAnim);
+  window._ringAnim = setInterval(() => {
+    animPct += Math.max(1, Math.round(overallPct / 20));
+    if (animPct >= overallPct) { animPct = overallPct; clearInterval(window._ringAnim); }
+    $('score-ring-pct').textContent = animPct + '%';
+  }, 30);
+
+  $('result-score').textContent = `${totalCorrect}/${totalQs}`;
+  $('result-sub').textContent = state.mode === 'combo'
+    ? `Full JAMB Exam — ${Math.round((totalCorrect/totalQs)*100)}%`
+    : `${state.subject} — ${Math.round((totalCorrect/totalQs)*100)}%`;
+
+  const breakdownEl = $('subject-breakdown');
+  breakdownEl.innerHTML = '';
+  perSubject.forEach(s => {
+    const pct = Math.round((s.correct / s.total) * 100);
+    const div = document.createElement('div');
+    div.className = 'subject-result-card';
+    div.innerHTML = `
+      <div class="subject-result-top"><span>${SUBJECT_ICONS[s.subject]||''} ${s.subject}</span><span>${s.correct}/${s.total} (${pct}%)</span></div>
+      <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%"></div></div>
+    `;
+    breakdownEl.appendChild(div);
+  });
+
+  const reviewList = $('review-list');
+  reviewList.innerHTML = '';
+  reviewList.style.display = 'none';
+  document.querySelector('.review-toggle').textContent = 'Show full review ▾';
+  const letters = ['A','B','C','D','E'];
+  state.questions.forEach((q, i) => {
+    const userAns = state.answers[i];
+    const isCorrect = userAns === q.answer;
+    const div = document.createElement('div');
+    div.className = 'review-item ' + (isCorrect ? 'correct' : 'wrong');
+    div.innerHTML = `
+      <div class="review-q">${i+1}. [${q.subject}] ${q.q}</div>
+      <div class="review-ans">
+        Your answer: <span class="${isCorrect ? 'right' : 'wrong-ans'}">${userAns === null ? '—' : letters[userAns] + ' - ' + q.options[userAns]}</span><br>
+        Correct answer: <span class="right">${letters[q.answer]} - ${q.options[q.answer]}</span>
+      </div>
+    `;
+    reviewList.appendChild(div);
+  });
+
+  saveHistoryEntry({
+    date: new Date().toISOString(),
+    mode: state.mode,
+    subjects: perSubject,
+    totalCorrect,
+    totalQs
+  });
+
+  clearProgress();
+  showScreen('screen-result');
+}
+
+function toggleReview() {
+  const el = $('review-list');
+  const btn = document.querySelector('.review-toggle');
+  const showing = el.style.display !== 'none';
+  el.style.display = showing ? 'none' : 'block';
+  btn.textContent = showing ? 'Show full review ▾' : 'Hide review ▴';
+}
+
+/* ================= PROGRESS TRACKING ================= */
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem('jamb_history') || '[]'); }
+  catch (e) { return []; }
+}
+function saveHistoryEntry(entry) {
+  try {
+    const history = loadHistory();
+    history.unshift(entry);
+    localStorage.setItem('jamb_history', JSON.stringify(history.slice(0, 200)));
+  } catch (e) {}
+}
+
+function setPerfTab(tab) {
+  perfTab = tab;
+  document.querySelectorAll('.perf-tab').forEach(b => b.classList.toggle('active', b.dataset.perfTab === tab));
+  renderProgressScreen();
+}
+
+function renderProgressScreen() {
+  const history = loadHistory();
+  const container = $('progress-content');
+  container.innerHTML = '';
+  document.querySelectorAll('.perf-tab').forEach(b => b.classList.toggle('active', b.dataset.perfTab === perfTab));
+
+  if (history.length === 0) {
+    container.innerHTML = '<div class="empty-note">No attempts yet. Finish a practice or exam to see your progress here.</div>';
+    return;
+  }
+
+  let totalAttempts = history.length;
+  let sumPct = 0;
+  const subjectStats = {}; // subject -> {correct, total}
+  history.forEach(h => {
+    sumPct += (h.totalCorrect / h.totalQs) * 100;
+    h.subjects.forEach(s => {
+      if (!subjectStats[s.subject]) subjectStats[s.subject] = { correct: 0, total: 0 };
+      subjectStats[s.subject].correct += s.correct;
+      subjectStats[s.subject].total += s.total;
+    });
+  });
+  const avgPct = Math.round(sumPct / totalAttempts);
+  let bestSubject = '—', bestPct = -1;
+  Object.keys(subjectStats).forEach(s => {
+    const p = (subjectStats[s].correct / subjectStats[s].total) * 100;
+    if (p > bestPct) { bestPct = p; bestSubject = s; }
+  });
+
+  if (perfTab === 'overview') {
+    const statRow = document.createElement('div');
+    statRow.className = 'stat-row';
+    statRow.innerHTML = `
+      <div class="stat-card"><div class="stat-num">${totalAttempts}</div><div class="stat-label">Attempts</div></div>
+      <div class="stat-card"><div class="stat-num">${avgPct}%</div><div class="stat-label">Average score</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:14px">${bestSubject}</div><div class="stat-label">Strongest subject</div></div>
+    `;
+    container.appendChild(statRow);
+
+    const trendLabel = document.createElement('div');
+    trendLabel.className = 'section-label';
+    trendLabel.textContent = 'Score trend (most recent attempts)';
+    container.appendChild(trendLabel);
+    container.appendChild(buildTrendChart(history));
+
+    const histLabel = document.createElement('div');
+    histLabel.className = 'section-label';
+    histLabel.style.marginTop = '4px';
+    histLabel.textContent = 'Recent attempts';
+    container.appendChild(histLabel);
+
+    history.slice(0, 20).forEach(h => {
+      const pct = Math.round((h.totalCorrect / h.totalQs) * 100);
+      const title = h.mode === 'combo' ? 'Full JAMB Exam' : h.subjects[0].subject;
+      const date = new Date(h.date);
+      const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `
+        <div class="history-left"><div class="history-title">${title}</div><div class="history-date">${dateStr}</div></div>
+        <div class="history-score">${h.totalCorrect}/${h.totalQs} · ${pct}%</div>
+      `;
+      container.appendChild(item);
+    });
+  } else if (perfTab === 'subject') {
+    const perfLabel = document.createElement('div');
+    perfLabel.className = 'section-label';
+    perfLabel.textContent = 'Performance by subject';
+    container.appendChild(perfLabel);
+    Object.keys(subjectStats).sort().forEach(s => {
+      const pct = Math.round((subjectStats[s].correct / subjectStats[s].total) * 100);
+      const row = document.createElement('div');
+      row.className = 'perf-row';
+      row.innerHTML = `<div class="perf-name">${s}</div><div class="perf-track"><div class="perf-fill" style="width:${pct}%"></div></div><div class="perf-pct">${pct}%</div>`;
+      container.appendChild(row);
+    });
+  } else if (perfTab === 'weak') {
+    const weakLabel = document.createElement('div');
+    weakLabel.className = 'section-label';
+    weakLabel.textContent = 'Subjects needing more practice (below 50%)';
+    container.appendChild(weakLabel);
+    const weak = Object.keys(subjectStats)
+      .map(s => ({ subject: s, pct: Math.round((subjectStats[s].correct / subjectStats[s].total) * 100) }))
+      .filter(s => s.pct < 50)
+      .sort((a, b) => a.pct - b.pct);
+    if (weak.length === 0) {
+      container.innerHTML += '<div class="empty-note">No weak subjects yet — nice work! Keep practicing to keep it that way.</div>';
+    } else {
+      weak.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'weak-item';
+        div.innerHTML = `<span>${SUBJECT_ICONS[s.subject] || ''} ${s.subject}</span><span class="weak-pct">${s.pct}%</span>`;
+        container.appendChild(div);
+      });
+    }
+  }
+}
+
+function buildTrendChart(history) {
+  const wrap = document.createElement('div');
+  wrap.className = 'trend-wrap';
+  const points = history.slice(0, 10).reverse().map(h => Math.round((h.totalCorrect / h.totalQs) * 100));
+  if (points.length < 2) {
+    wrap.innerHTML = '<div class="empty-note" style="padding:10px">Complete a few more attempts to see your trend line.</div>';
+    return wrap;
+  }
+  const w = 280, h = 70, pad = 6;
+  const stepX = (w - pad * 2) / (points.length - 1);
+  const coords = points.map((p, i) => [pad + i * stepX, h - pad - (p / 100) * (h - pad * 2)]);
+  const path = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
+  const dots = coords.map(c => `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="3" fill="var(--accent2)"/>`).join('');
+  wrap.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">
+      <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+    </svg>`;
+  return wrap;
+}
+
+/* ================= OFFLINE PROGRESS SAVE (mid-quiz crash recovery) ================= */
+function saveProgress() {
+  try {
+    localStorage.setItem('jamb_progress', JSON.stringify({
+      mode: state.mode, subject: state.subject, comboSubjects: state.comboSubjects,
+      answers: state.answers, flags: state.flags, current: state.current, timeLeft: state.timeLeft
+    }));
+  } catch (e) {}
+}
+function clearProgress() { try { localStorage.removeItem('jamb_progress'); } catch (e) {} }
+
+function tryResumeProgress() {
+  try {
+    const raw = localStorage.getItem('jamb_progress');
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved.comboSubjects || !saved.comboSubjects.length) return;
+    const label = saved.mode === 'combo' ? 'Full JAMB Exam' : saved.subject;
+    if (!confirm(`Resume your unfinished ${label} session?`)) { clearProgress(); return; }
+
+    state.mode = saved.mode;
+    state.subject = saved.subject;
+    state.comboSubjects = saved.comboSubjects;
+    state.questions = [];
+    state.sectionBounds = [];
+    state.comboSubjects.forEach(subject => {
+      const start = state.questions.length;
+      QUESTION_BANK[subject].forEach(q => state.questions.push({ subject, ...q }));
+      state.sectionBounds.push({ subject, start, end: state.questions.length - 1 });
+    });
+    state.answers = saved.answers;
+    state.flags = saved.flags || new Array(state.questions.length).fill(false);
+    state.current = saved.current;
+    state.timeLeft = saved.timeLeft;
+    showScreen('screen-quiz');
+    renderQuestion();
+    startTimer();
+  } catch (e) { clearProgress(); }
+}
+
+/* ================= NET BADGE ================= */
+function updateNetBadge() {
+  const badge = $('net-badge');
+  if (navigator.onLine) { badge.textContent = 'online'; badge.classList.add('online'); }
+  else { badge.textContent = 'offline mode'; badge.classList.remove('online'); }
+}
+window.addEventListener('online', updateNetBadge);
+window.addEventListener('offline', updateNetBadge);
+
+/* ================= AUTH / PROFILE ================= */
+function loadProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); }
+  catch (e) { return null; }
+}
+function saveProfile(profile) {
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch (e) {}
+}
+
+function populateAuthSelects() {
+  const stateEl = $('reg-state');
+  if (stateEl) {
+    stateEl.innerHTML = '<option value="">Select state</option>' +
+      NG_STATES.map(s => `<option value="${s}">${s}</option>`).join('');
+  }
+}
+
+function openSubjectPicker(slot) {
+  pickerTarget = slot;
+  const labels = { sub2: 'Select Second Subject', sub3: 'Select Third Subject', sub4: 'Select Fourth Subject' };
+  $('picker-title').textContent = labels[slot];
+  $('picker-search').value = '';
+  renderPickerList();
+  showScreen('screen-subject-picker');
+}
+
+function closeSubjectPicker() {
+  showScreen('screen-register');
+}
+
+function renderPickerList() {
+  const query = $('picker-search').value.trim().toLowerCase();
+  const takenElsewhere = Object.keys(slotSelections).filter(k => k !== pickerTarget).map(k => slotSelections[k]).filter(Boolean);
+  const listEl = $('picker-list');
+  listEl.innerHTML = '';
+  Object.keys(QUESTION_BANK).filter(s => s !== COMPULSORY)
+    .filter(s => s.toLowerCase().includes(query))
+    .sort((a, b) => (QUESTION_BANK[b].length > 0) - (QUESTION_BANK[a].length > 0))
+    .forEach(subject => {
+      const taken = takenElsewhere.includes(subject);
+      const n = QUESTION_BANK[subject].length;
+      const btn = document.createElement('button');
+      btn.className = 'picker-item';
+      btn.disabled = taken;
+      btn.innerHTML = `
+        <span class="picker-icon">${SUBJECT_ICONS[subject] || '📄'}</span>
+        <span class="picker-text">
+          <div class="picker-name">${subject}${taken ? ' (already chosen)' : ''}</div>
+          <div class="picker-count">${n > 0 ? n + ' questions' : 'coming soon'}</div>
+        </span>`;
+      if (!taken) btn.onclick = () => pickSubjectForSlot(subject);
+      listEl.appendChild(btn);
+    });
+}
+
+function pickSubjectForSlot(subject) {
+  slotSelections[pickerTarget] = subject;
+  const labelEl = $(`picker-label-${pickerTarget}`);
+  labelEl.textContent = subject;
+  $(`picker-btn-${pickerTarget}`).classList.add('filled');
+  showScreen('screen-register');
+}
+
+function handleRegister() {
+  const firstname = $('reg-firstname').value.trim();
+  const surname = $('reg-surname').value.trim();
+  const phone = $('reg-phone').value.trim();
+  const email = $('reg-email').value.trim();
+  const sub2 = slotSelections.sub2;
+  const sub3 = slotSelections.sub3;
+  const sub4 = slotSelections.sub4;
+  const state = $('reg-state').value;
+  const course = $('reg-course').value.trim();
+  const password = $('reg-password').value;
+  const password2 = $('reg-password2').value;
+  const errEl = $('reg-error');
+
+  if (!firstname || !surname || !phone) { errEl.textContent = 'Please fill in your name and phone number.'; return; }
+  if (!sub2 || !sub3 || !sub4) { errEl.textContent = 'Please select all three elective subjects.'; return; }
+  if (new Set([sub2, sub3, sub4]).size < 3) { errEl.textContent = 'Choose three different subjects.'; return; }
+  if (!state) { errEl.textContent = 'Please select your state.'; return; }
+  if (!password || password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (password !== password2) { errEl.textContent = 'Passwords do not match.'; return; }
+
+  errEl.textContent = '';
+  saveProfile({ firstname, surname, phone, email, subjects: [COMPULSORY, sub2, sub3, sub4], state, course, password });
+  enterApp(firstname);
+}
+
+function showLogin() {
+  const profile = loadProfile();
+  $('login-sub').textContent = profile ? `Enter your password to continue, ${profile.firstname}.` : 'Enter your password to continue.';
+  $('login-error').textContent = '';
+  $('login-password').value = '';
+  showScreen('screen-login');
+}
+
+function handleLogin() {
+  const profile = loadProfile();
+  const entered = $('login-password').value;
+  if (!profile) { showScreen('screen-register'); return; }
+  if (entered !== profile.password) { $('login-error').textContent = 'Incorrect password. Try again.'; return; }
+  enterApp(profile.firstname);
+}
+
+function logout() {
+  showLogin();
+}
+
+function resetProfile() {
+  if (!confirm('This clears your registration on this device. Continue?')) return;
+  try { localStorage.removeItem(PROFILE_KEY); } catch (e) {}
+  $('reg-firstname').value = ''; $('reg-surname').value = ''; $('reg-phone').value = '';
+  $('reg-email').value = ''; $('reg-course').value = ''; $('reg-state').value = '';
+  $('reg-password').value = ''; $('reg-password2').value = ''; $('reg-error').textContent = '';
+  ['sub2', 'sub3', 'sub4'].forEach(slot => {
+    slotSelections[slot] = '';
+    $(`picker-label-${slot}`).textContent = 'Select subject';
+    $(`picker-btn-${slot}`).classList.remove('filled');
+  });
+  showScreen('screen-register');
+}
+
+function enterApp(firstname) {
+  $('home-greeting').textContent = `Hi ${firstname} 👋`;
+  $('home-subtitle').textContent = 'Choose how you want to practice today';
+  showScreen('screen-home');
+  tryResumeProgress();
+}
+
+function initAuth() {
+  populateAuthSelects();
+  const profile = loadProfile();
+  if (profile) { showLogin(); } else { showScreen('screen-register'); }
+}
+
+/* ================= SETTINGS: THEME / NOTIF ================= */
+function applySavedSettings() {
+  try {
+    const dark = localStorage.getItem('jamb_dark') === '1';
+    document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
+    const toggleDark = $('toggle-dark'); if (toggleDark) toggleDark.checked = dark;
+    const notif = localStorage.getItem('jamb_notif') === '1';
+    const toggleNotifEl = $('toggle-notif'); if (toggleNotifEl) toggleNotifEl.checked = notif;
+  } catch (e) {}
+}
+function toggleDarkMode(on) {
+  document.body.setAttribute('data-theme', on ? 'dark' : 'light');
+  try { localStorage.setItem('jamb_dark', on ? '1' : '0'); } catch (e) {}
+}
+function toggleNotif(on) {
+  try { localStorage.setItem('jamb_notif', on ? '1' : '0'); } catch (e) {}
+  if (on) alert('Noted! Since this app works fully offline with no server, reminders only work while the app is open on this device — there is no push-notification service behind it.');
+}
+function recacheQuestionBank() {
+  $('qbank-status').textContent = 'Refreshing…';
+  setTimeout(() => {
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage && navigator.serviceWorker.controller.postMessage('refresh');
+    }
+    $('qbank-status').textContent = 'All questions cached for offline use ✓';
+  }, 600);
+}
+
+/* ================= SETTINGS: DATA & BACKEND (local export/import) ================= */
+function exportData() {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    profile: loadProfile(),
+    history: loadHistory()
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'darasimi-jamb-cbt-data.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!confirm('This will replace your current profile and history on this device with the imported file. Continue?')) return;
+      if (data.profile) saveProfile(data.profile);
+      if (Array.isArray(data.history)) localStorage.setItem('jamb_history', JSON.stringify(data.history.slice(0, 200)));
+      alert('Data imported successfully.');
+      goToSettings();
+    } catch (e) {
+      alert('That file could not be read. Please choose a valid exported JSON file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function clearAllData() {
+  if (!confirm('This permanently erases your profile and all recorded scores on this device. This cannot be undone. Continue?')) return;
+  try {
+    localStorage.removeItem(PROFILE_KEY);
+    localStorage.removeItem('jamb_history');
+    localStorage.removeItem('jamb_progress');
+  } catch (e) {}
+  showScreen('screen-register');
+}
+
+/* ================= SERVICE WORKER ================= */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
+/* ================= INIT ================= */
+updateNetBadge();
+applySavedSettings();
+initAuth();
+</script>
+</body>
+</html>
